@@ -76,7 +76,7 @@ $(DOC_TMP)/01-front-matter.md: 01-front-matter.md
 
 $(DOC_TMP)/toc.md: $(DOC_TMP)/$(DEP_NN)-from-html.md
 	tail +5 $(DOC_TMP)/$(DEP_NN)-from-html.md \
-		| grep -B999 -m1 -e "^#" > $(DOC_TMP)/toc.md
+		| grep -B999 -m1 -e "^$$" > $(DOC_TMP)/toc.md
 
 $(DOC_TMP)/$(DEP_NN)-from-html.md: $(DOC_TMP)/$(DEP_NN).html
 	pandoc -f html -s --atx-headers $(DOC_TMP)/$(DEP_NN).html \

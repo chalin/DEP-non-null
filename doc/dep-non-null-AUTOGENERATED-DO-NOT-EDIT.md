@@ -131,8 +131,6 @@
         -   [I.3.2 Language evolution](#language-evolution)
     -   [I.4 Modern web/mobile languages with non-null types and](#modern-lang-nnbd)[NNBD](#part-nnbd "Non-Null By Default")
 
-# Non-null Types and Non-null By Default (NNBD)
-
 <a name="part-main"></a>
 # Non-null Types and Non-null By Default (NNBD)
 
