@@ -13,7 +13,6 @@
 
 var pandoc = require('pandoc-filter');
 var Str = pandoc.Str;
-var RawInline = pandoc.RawInline;
 
 if (typeof String.prototype.startsWith != 'function') {
   // see below for better implementation!
@@ -46,7 +45,7 @@ function action(type, value, format, meta) {
 
     if (type === 'Str'
         && (value.startsWith('Comment.') || value.startsWith('Comments:')) ) {
-        return [ RawInline('tex','\\sf{}'), Str(value) ];
+        return [ pandoc.RawInline('tex','\\sf{}'), Str(value) ];
     }
 
     // Dart syntax highlighting isn't supported; use Java instead.
@@ -61,10 +60,15 @@ function action(type, value, format, meta) {
         attr[1] = codeStyleEtc;
         return pandoc.CodeBlock(attr, code);
     }
-}
 
-function rawTex(str) {
-    return pandoc.RawInline('tex', str);
+    // Ensure custom header ids get embedded into generated markdown
+    if (type === 'Header' && value[1].length > 0) {
+        var name = value[1][0];
+        return [
+            pandoc.RawBlock('html','<a name="' + name + '"></a>'),
+            pandoc.Header(value[0], value[1], value[2])
+        ];
+    }
 }
 
 pandoc.stdio(action);

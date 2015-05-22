@@ -1,5 +1,13 @@
+# Non-null Types and Non-null By Default (NNBD) {- #part-main}
+
+## Contact information {-}
+
+- [Patrice Chalin][], @[chalin][], [chalin@dsrg.org](mailto:chalin@dsrg.org)
+- **[DEP][] home**: [github.com/chalin/DEP-non-null][DEP-non-null].
+- **Additional stakeholders**:
+    + Leaf Petersen, @[leafpetersen](https://github.com/leafpetersen), [Dart Dev Compiler][] team.
+
 ## 1 Introduction
-\sectionmark{Dart DEP, Non-null}
 
 In this [DEP][] we propose [4 _core_ updates and additions](#lang-changes) to the language allowing us to [naturally recover](#part-non-null-types) a [**non-null-by-default** (NNBD)](#part-nnbd) interpretation of Dart _class types_. That is, _generally speaking_, an unadorned class type *T* will represent the *non-null* type consisting (strictly) of instances of *T*. When needed, the _meta type annotation_ `?` can be used; ?*T* denotes the *nullable* type derived from *T*, consisting of values from *T* or `null`.
 

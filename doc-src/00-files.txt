@@ -1,7 +1,5 @@
 # Main
 01-front-matter.md
-# For .md version only
-# 02-contents.md
 10-proposal.md
 # Parts
 1a-non-null-types.md
