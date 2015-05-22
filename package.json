@@ -1,0 +1,18 @@
+{
+  "name": "DEP-non-null",
+  "version": "0.1.0",
+  "description": "Dart DEP for Non-null Types and Non-null By Default (NNBD)",
+  "homepage": "https://github.com/chalin/DEP-non-null",
+  "bugs": "https://github.com/chalin/DEP-non-null",
+  "contributors": {
+    "Patrice Chalin": "chalin@dsrg.org"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chalin/DEP-non-null.git"
+  },
+  "dependencies": {
+      "pandoc-filter": "*"
+  }
+}

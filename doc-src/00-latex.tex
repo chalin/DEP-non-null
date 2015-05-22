@@ -1,0 +1,19 @@
+% Fix even-page header problem (header is always ``CONTENTS'')
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\newcommand{\myTitle}{Dart DEP Non-null Types and Non-null By Default}
+\newcommand{\myShortTitle}{Dart DEP, Non-null}
+\fancyhead[RE]{\textsc{\myShortTitle}}
+\fancyhead[LO]{\textsc{P.~Chalin}}
+
+% DartNNBD specific definitions
+
+\newcommand{\botObject}{\bot_{\cd{Object}}}
+
+% Excerpt from dart.sty
+
+\def\builtinId#1{\textbf{#1}}
+\def\DYNAMIC{\builtinId{dynamic}}
+\newcommand{\cd}[1]{\textsf{#1}}
+

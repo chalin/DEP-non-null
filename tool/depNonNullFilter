@@ -1,0 +1,70 @@
+#!/usr/bin/env node
+
+'use strict';
+
+// Pandoc filter for DEP-non-null.
+//
+// Handles:
+// - Special "links" for ins/del.
+// - Format "Comment" as \sf.
+//
+// To do: ?
+// - Translate \bot into ⊥ for .md format?
+
+var pandoc = require('pandoc-filter');
+var Str = pandoc.Str;
+var RawInline = pandoc.RawInline;
+
+if (typeof String.prototype.startsWith != 'function') {
+  // see below for better implementation!
+  String.prototype.startsWith = function (str){
+    return this.indexOf(str) === 0;
+  };
+}
+
+function isDssChangeCmd(type, value, str) {
+    // Link([Inline], Target)
+    // Target = [URL,title]
+    
+    var linkTarget = value[1];
+    if (type !== 'Link' || !linkTarget || linkTarget.length < 2)
+        return false;
+
+    return linkTarget[1].startsWith(str);
+}
+
+function action(type, value, format, meta) {
+    if (isDssChangeCmd(type, value, 'INS:')) {
+        var list = value[0].slice();
+        list.unshift(Str("[["));
+        list.push(Str("]]"));
+        return pandoc.Link(list, value[1]);
+    }
+
+    if (isDssChangeCmd(type, value, 'DEL:'))
+        return pandoc.Strikeout(value[0]);
+
+    if (type === 'Str'
+        && (value.startsWith('Comment.') || value.startsWith('Comments:')) ) {
+        return [ RawInline('tex','\\sf{}'), Str(value) ];
+    }
+
+    // Dart syntax highlighting isn't supported; use Java instead.
+    if (type === 'CodeBlock') {
+        var codeStyle = value[0][1][0];
+        if (codeStyle !== 'dart') return;
+
+        var attr = value[0].slice();
+        var code = value[1];
+        var codeStyleEtc = attr[1].slice();
+        codeStyleEtc[0] = 'java';
+        attr[1] = codeStyleEtc;
+        return pandoc.CodeBlock(attr, code);
+    }
+}
+
+function rawTex(str) {
+    return pandoc.RawInline('tex', str);
+}
+
+pandoc.stdio(action);
