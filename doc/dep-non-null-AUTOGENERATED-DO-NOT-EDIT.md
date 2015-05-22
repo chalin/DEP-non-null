@@ -1,6 +1,6 @@
 # Dart DEP for Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-05-22 (0.1.1)
+#### 2015-05-22 (0.1.2)
 
 -   [Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -259,7 +259,7 @@ The group of goals presented next will be collectively referred to as **G0**; su
 
 -   **Goal G0, optional types**. Specifically these two aspects, which follow from the fundamental property of Dart that *static type annotations are* **optional** (see “Overview”, [Bracha, 2012](https://www.dartlang.org/articles/optional-types/#overview)):
 
-    1.  Static type annotations, whether they include nullity meta type annotations are not, shall have *no impact on* **production mode execution**.
+    1.  Static type annotations, whether they include nullity meta type annotations or not, shall have *no impact on* **production mode execution**.
 
     2.  Static type checking rules shall never prevent code from executing, and hence never coerce a developer into *adding or changing* static (nullity) type annotations.
 
@@ -302,7 +302,7 @@ Once a “critical mass” of this proposal’s features have gained approval, a
 
 **Core language design decisions**:
 
--   [A.2](#non-null-types). *Drop semantic rules giving special treatment to* `null`. In particular, the static type of `null` is taken to be `Null`, not \(\bot\) (while still allowing `null` to be returned for `void` functions). As a consequence, all non-`Null` class types (except `Object`, which is addressed next) loose [assignment compatibility](#assignment-compatible) with `null`, and hence *naturally recover* their status as *non-null types*.
+-   [A.2](#non-null-types). *Drop semantic rules giving special treatment to* `null`. In particular, the static type of `null` is taken to be `Null`, not \(\bot\) (while still allowing `null` to be returned for `void` functions). As a consequence, all non-`Null` class types (except `Object`, which is addressed next) lose [assignment compatibility](#assignment-compatible) with `null`, and hence *naturally recover* their status as *non-null types*.
 
 -   [B.2](#nnbd). Create a *new class hierarchy root* named `_ObjectOrNull` with only two immediate subclasses: `Object` and `Null`. This new root is internal and hence inaccessible to users. Thus, `Object` *remains the implicit upper bound* of classes.
 
@@ -557,7 +557,7 @@ We expect the proportion of non-null vs. nullable declarations in Dart to be si
 <a name="nnbd"></a>
 ## B.2 Feature details: non-null by default
 
-A consequence of dropping the special semantic rules for `null` ([A.2](#non-null-types)) is that all non-`Null` classes except `Object` loose [assignment compatibility](#assignment-compatible) with `Null`, and hence *naturally recover* their status as *non-null types*. In [DartC](#terms "Classic (i.e., current) Dart"), `Null` directly extends `Object` and so `Null <: Object`. This means that `Null` may still be [assigned to](#def-subtype) `Object`, effectively making `Object` nullable. We ensure that `Object` is non-null as follows.
+A consequence of dropping the special semantic rules for `null` ([A.2](#non-null-types)) is that all non-`Null` classes except `Object` lose [assignment compatibility](#assignment-compatible) with `Null`, and hence *naturally recover* their status as *non-null types*. In [DartC](#terms "Classic (i.e., current) Dart"), `Null` directly extends `Object` and so `Null <: Object`. This means that `Null` may still be [assigned to](#def-subtype) `Object`, effectively making `Object` nullable. We ensure that `Object` is non-null as follows.
 
 <a name="new-root"></a>
 ### B.2.1 Ensuring `Object` is non-null: elect `_ObjectOrNull` as a new root
@@ -875,7 +875,7 @@ While the static and dynamic semantics of generics follow from those of [DartC](
 <a name="nullable-type-op-alt"></a>
 ### C.5.1 Loss of expressivity due to union type interoperability, an alternative
 
-One caveat of “future proofing” the nullable type operator ?*T*, so that its semantics are compatible with the union type *T* | `Null` ([B.3.1](#uti)), is that we loose the ability to statically constrain a generic type parameter to be nullable but *not* `Null`—we discuss *why* we might want to do this in [C.5.3](#type-param-not-null). We loose this ability because ?*T* is not a type *constructor*, which would yield a unique (tagged) type, but rather just a type *operator* mapping *T* to the equivalent of the (untagged) union type *T* | `Null`. Thus, e.g., no distinction is made between `Null` and `?Null`.
+One caveat of “future proofing” the nullable type operator ?*T*, so that its semantics are compatible with the union type *T* | `Null` ([B.3.1](#uti)), is that we lose the ability to statically constrain a generic type parameter to be nullable but *not* `Null`—we discuss *why* we might want to do this in [C.5.3](#type-param-not-null). We lose this ability because ?*T* is not a type *constructor*, which would yield a unique (tagged) type, but rather just a type *operator* mapping *T* to the equivalent of the (untagged) union type *T* | `Null`. Thus, e.g., no distinction is made between `Null` and `?Null`.
 
 We could alternatively define ?*T* as a type constructor (as if it were introducing a new type like `_$Nullable<`*T*`>`), orthogonal to union types, but there seems to be little to justify this complexity—future interoperability with union types seems more important and would be much more supportive of [G0, usability](#g0) and [G0, ease migration](#g0).
 
@@ -1048,7 +1048,7 @@ The refined definitions of `<<` and `<:` given in [D.2.2](#bang-dynamic-subtype-
 
 Introducing a new bottom element for the `Object` subhierarchy most accurately captures our needs thought it renders the semantics more complex, decreasing [G0, usability](#g0) and increasing tool reengineering costs.
 
-An alternative, allowing us to avoid this extra complexity, is to treat `!dynamic` simply as \(\bot\). What we loose, are [static warning](#terms "A problem reported by the static checker")s and/or [dynamic type error](#terms "A type error reported in checked mode")s when: an expression of the static type `!dynamic` is assigned to variable declared as `Null` and, when `!dynamic` is used as a type argument for a `Null` type parameter. But such uses of `Null` are likely to be rare.
+An alternative, allowing us to avoid this extra complexity, is to treat `!dynamic` simply as \(\bot\). What we lose, are [static warning](#terms "A problem reported by the static checker")s and/or [dynamic type error](#terms "A type error reported in checked mode")s when: an expression of the static type `!dynamic` is assigned to variable declared as `Null` and, when `!dynamic` is used as a type argument for a `Null` type parameter. But such uses of `Null` are likely to be rare.
 
 <a name="part-misc"></a>
 # Part E: Miscellaneous, syntactic sugar and other conveniences
