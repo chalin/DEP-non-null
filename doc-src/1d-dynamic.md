@@ -75,4 +75,4 @@ The refined definitions of `<<` and `<:` given in [D.2.2](#bang-dynamic-subtype-
 
 Introducing a new bottom element for the `Object` subhierarchy most accurately captures our needs thought it renders the semantics more complex, decreasing [G0, usability](#g0) and increasing tool reengineering costs.
 
-An alternative, allowing us to avoid this extra complexity, is to treat `!dynamic` simply as $\bot$. What we loose, are [static warning][]s and/or [dynamic type error][]s when: an expression of the static type `!dynamic` is assigned to variable declared as `Null` and, when `!dynamic` is used as a type argument for a `Null` type parameter. But such uses of `Null` are likely to be rare.
+An alternative, allowing us to avoid this extra complexity, is to treat `!dynamic` simply as $\bot$. What we lose, are [static warning][]s and/or [dynamic type error][]s when: an expression of the static type `!dynamic` is assigned to variable declared as `Null` and, when `!dynamic` is used as a type argument for a `Null` type parameter. But such uses of `Null` are likely to be rare.

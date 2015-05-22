@@ -124,7 +124,7 @@ The group of goals presented next will be collectively referred to as **G0**; su
 
 - **Goal G0, optional types**. Specifically these two aspects, which follow from the fundamental property of Dart that _static type annotations are_ **optional** (see "Overview", [Bracha, 2012][Dart Optional Types, overview]):
 
-    (a) Static type annotations, whether they include nullity meta type annotations are not, shall have _no impact on_ **production mode execution**.
+    (a) Static type annotations, whether they include nullity meta type annotations or not, shall have _no impact on_ **production mode execution**.
 
     (b) Static type checking rules shall never prevent code from executing, and hence never coerce a developer into _adding or changing_ static (nullity) type annotations.
 
@@ -166,7 +166,7 @@ Once a "critical mass" of this proposal's features have gained approval, a fully
 
 **Core language design decisions**:
 
-- [A.2](#non-null-types). *Drop semantic rules giving special treatment to* `null`. In particular, the static type of `null` is taken to be `Null`, not $\bot$ (while still allowing `null` to be returned for `void` functions). As a consequence, all non-`Null` class types (except `Object`, which is addressed next) loose [assignment compatibility][assignment compatible] with `null`, and hence *naturally recover* their status as *non-null types*.
+- [A.2](#non-null-types). *Drop semantic rules giving special treatment to* `null`. In particular, the static type of `null` is taken to be `Null`, not $\bot$ (while still allowing `null` to be returned for `void` functions). As a consequence, all non-`Null` class types (except `Object`, which is addressed next) lose [assignment compatibility][assignment compatible] with `null`, and hence *naturally recover* their status as *non-null types*.
 
 - [B.2](#nnbd). Create a *new class hierarchy root* named `_ObjectOrNull` with only two immediate subclasses: `Object` and `Null`. This new root is internal and hence inaccessible to users. Thus, `Object` _remains the implicit upper bound_ of classes.
 

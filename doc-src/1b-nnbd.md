@@ -18,7 +18,7 @@ We expect the proportion of non-null vs. nullable declarations in Dart to be sim
 
 ## B.2 Feature details: non-null by default {#nnbd}
 
-A consequence of dropping the special semantic rules for `null` ([A.2](#non-null-types)) is that all non-`Null` classes except `Object` loose [assignment compatibility][assignment compatible] with `Null`, and hence *naturally recover* their status as *non-null types*. In [DartC][], `Null` directly extends `Object` and so `Null <: Object`. This means that `Null` may still be [assigned to](#def-subtype) `Object`, effectively making `Object` nullable. We ensure that `Object` is non-null as follows.
+A consequence of dropping the special semantic rules for `null` ([A.2](#non-null-types)) is that all non-`Null` classes except `Object` lose [assignment compatibility][assignment compatible] with `Null`, and hence *naturally recover* their status as *non-null types*. In [DartC][], `Null` directly extends `Object` and so `Null <: Object`. This means that `Null` may still be [assigned to](#def-subtype) `Object`, effectively making `Object` nullable. We ensure that `Object` is non-null as follows.
 
 ### B.2.1 Ensuring `Object` is non-null: elect `_ObjectOrNull` as a new root {#new-root}
 
