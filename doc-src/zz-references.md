@@ -6,6 +6,7 @@
 [CLU]: http://en.wikipedia.org/wiki/CLU_(programming_language)
 [Ceylon `Anything` API]: http://ceylon-lang.org/documentation/1.0/api/ceylon/language/Anything.type.html
 [Ceylon `List` API]: http://modules.ceylon-lang.org/repo/1/ceylon/language/1.1.0/module-doc/api/List.type.html
+[Ceylon functions]: http://ceylon-lang.org/documentation/1.1/spec/html/declarations.html#functions
 [Ceylon important types explained]: http://ceylon-lang.org/documentation/1.1/reference/structure/type-declaration/#selected_important_type_declarations
 [Ceylon optional types]: http://ceylon-lang.org/documentation/1.1/tour/basics/#optional_types
 [Ceylon union types]: http://ceylon-lang.org/documentation/1.1/spec/html/typesystem.html#uniontypes

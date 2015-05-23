@@ -102,6 +102,8 @@ We drop the rule that attributes a special static type to `null`, and derive the
 
 As explained in [DSS][] 17.12, "Return", functions declared `void` must return _some_ value. (In fact, in production mode, where static type annotations like `void` are irrelevant, a `void` function can return _any_ value.)
 
+> Comment. Interestingly, a `void` function in [Ceylon][] is considered to have the return type `Anything`, though such functions always return `null`. Identification with `Anything` is to permit reasonable function subtyping ([[Ceylon functions][]).
+
 In [DartC][] checked mode, `void` functions can either implicitly or explicitly return `null` without a [static warning][] or [dynamic type error][]. As was mentioned, this is because the static type of `null` is taken as $\bot$ in [DartC][]. In [DartNNBD][], we make explicit that `Null` can be _assigned to_ `void`, by establishing that `Null` is more specific than `void`  ([A.1.4](#def-subtype)): `Null << void`.
 
 > Comment. In a sense, this makes explicit the fact that `Null` is being treated as a "carrier type" for `void` in Dart. `Null` is a [unit type][], and hence returning `null` conveys no information. The above also fixes the slight irregularity noted in [A.1.1](#dartc-static-checking): in [DartNNBD][], no [static warning][] will result from a statement like `return $null;` used inside a `void` function (where `$null` is declared as a `const Null`).
