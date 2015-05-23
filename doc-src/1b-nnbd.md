@@ -22,7 +22,35 @@ A consequence of dropping the special semantic rules for `null` ([A.2](#non-null
 
 ### B.2.1 Ensuring `Object` is non-null: elect `_Anything` as a new root {#new-root}
 
-We define the internal class `_Anything` as the **new root** of the class hierarchy. Being internal, it cannot be subclassed or instantiated by users. The only two immediate subclasses of `_Anything` are `Object` and `Null`. Class members of `Object` that are relevant to `Null` shall be promoted to `_Anything`. This impacts various sections of the language specification, including ([DSS][] 10, "Classes"): "Every class has a single superclass except class [`Object`][del][`_Anything`][ins] which has no superclass".
+We define the internal class `_Anything` as the **new root** of the class hierarchy. Being internal, it cannot be subclassed or instantiated by users. `Object` and `Null` are immediate subclasses of `_Anything`, redeclared as:
+
+```dart
+abstract class _Anything { const _Anything(); }
+
+abstract class _Basic extends _Anything {
+  int get hashCode;
+  String toString();
+  dynamic noSuchMethod(Invocation invocation);
+  Type get runtimeType;
+}
+
+class Object extends _Anything implements _Basic {
+  const Object();
+  bool operator ==(other) => identical(this, other);
+  ... // Methods of _Basic are all declared external
+}
+```
+
+The definition of `Null` is the same as in [DartC][] except that the class extends `_Anything` and implements `_Basic`. The semantic rules of equality ([DSS][] 16.22 "Equality"), deal explicitly with cases where either operand is `null`. Thus `null` can never be a receiver nor an argument to the `==` operator, and so `==` is excluded from `_Basic`.
+
+> Comment. Declaring `_Anything` as a class without methods allows us to provide a conventional definition for `void` as an empty interface, realized only by `Null`:
+>
+> ```dart
+> abstract class void extends _Anything {}
+> class Null extends _Anything implements _Basic, void { /* Same as in DartC */ }
+> ```
+
+The changes proposed in this subsection impact various sections of the language specification, including ([DSS][] 10, "Classes"): "Every class has a single superclass except class [`Object`][del][`_Anything`][ins] which has no superclass".
 
 As is discussed below ([B.4.1](#ceylon-root)), [Ceylon][] has a class hierarchy like the one proposed here for Dart.
 

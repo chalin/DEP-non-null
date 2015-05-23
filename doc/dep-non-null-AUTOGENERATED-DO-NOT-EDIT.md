@@ -1,6 +1,6 @@
 # Dart DEP for Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-05-22 (0.1.2)
+#### 2015-05-23 (0.2.0)
 
 -   [Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -34,7 +34,7 @@
 -   [Part B: Non-null by default (NNBD)](#part-nnbd)
     -   [B.1 Motivation: nullable-by-default increases migration effort](#part-nnbd-motivation)
     -   [B.2 Feature details: non-null by default](#nnbd)
-        -   [B.2.1 Ensuring `Object` is non-null: elect `_ObjectOrNull` as a new root](#new-root)
+        -   [B.2.1 Ensuring `Object` is non-null: elect `_Anything` as a new root](#new-root)
         -   [B.2.2 Nullable type operator `?`](#nullable-type-op)
         -   [B.2.3 Non-null type operator `!`](#non-null-type-op)
         -   [B.2.4 Resolution of negated type test (`is!`) syntactic ambiguity](#type-test-ambiguity)
@@ -304,7 +304,7 @@ Once a “critical mass” of this proposal’s features have gained approval, a
 
 -   [A.2](#non-null-types). *Drop semantic rules giving special treatment to* `null`. In particular, the static type of `null` is taken to be `Null`, not \(\bot\) (while still allowing `null` to be returned for `void` functions). As a consequence, all non-`Null` class types (except `Object`, which is addressed next) lose [assignment compatibility](#assignment-compatible) with `null`, and hence *naturally recover* their status as *non-null types*.
 
--   [B.2](#nnbd). Create a *new class hierarchy root* named `_ObjectOrNull` with only two immediate subclasses: `Object` and `Null`. This new root is internal and hence inaccessible to users. Thus, `Object` *remains the implicit upper bound* of classes.
+-   [B.2](#nnbd). Create a *new class hierarchy root* named `_Anything` with only two immediate subclasses: `Object` and `Null`. This new root is internal and hence inaccessible to users. Thus, `Object` *remains the implicit upper bound* of classes.
 
 -   [B.2](#nnbd). Introduce *type operators*:
     -   ?*T* defines the *nullable* variant of type *T*;
@@ -498,6 +498,8 @@ We drop the rule that attributes a special static type to `null`, and derive the
 
 As explained in [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 17.12, “Return”, functions declared `void` must return *some* value. (In fact, in production mode, where static type annotations like `void` are irrelevant, a `void` function can return *any* value.)
 
+> Comment. Interestingly, a `void` function in [Ceylon](http://ceylon-lang.org) is considered to have the return type `Anything`, though such functions always return `null`. Identification with `Anything` is to permit reasonable function subtyping ([[Ceylon functions](http://ceylon-lang.org/documentation/1.1/spec/html/declarations.html#functions)).
+
 In [DartC](#terms "Classic (i.e., current) Dart") checked mode, `void` functions can either implicitly or explicitly return `null` without a [static warning](#terms "A problem reported by the static checker") or [dynamic type error](#terms "A type error reported in checked mode"). As was mentioned, this is because the static type of `null` is taken as \(\bot\) in [DartC](#terms "Classic (i.e., current) Dart"). In [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), we make explicit that `Null` can be *assigned to* `void`, by establishing that `Null` is more specific than `void` ([A.1.4](#def-subtype)): `Null << void`.
 
 > Comment. In a sense, this makes explicit the fact that `Null` is being treated as a “carrier type” for `void` in Dart. `Null` is a [unit type](http://en.wikipedia.org/wiki/Unit_type), and hence returning `null` conveys no information. The above also fixes the slight irregularity noted in [A.1.1](#dartc-static-checking): in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), no [static warning](#terms "A problem reported by the static checker") will result from a statement like `return $null;` used inside a `void` function (where `$null` is declared as a `const Null`).
@@ -560,9 +562,37 @@ We expect the proportion of non-null vs. nullable declarations in Dart to be si
 A consequence of dropping the special semantic rules for `null` ([A.2](#non-null-types)) is that all non-`Null` classes except `Object` lose [assignment compatibility](#assignment-compatible) with `Null`, and hence *naturally recover* their status as *non-null types*. In [DartC](#terms "Classic (i.e., current) Dart"), `Null` directly extends `Object` and so `Null <: Object`. This means that `Null` may still be [assigned to](#def-subtype) `Object`, effectively making `Object` nullable. We ensure that `Object` is non-null as follows.
 
 <a name="new-root"></a>
-### B.2.1 Ensuring `Object` is non-null: elect `_ObjectOrNull` as a new root
+### B.2.1 Ensuring `Object` is non-null: elect `_Anything` as a new root
 
-We define the internal class `_ObjectOrNull` as the **new root** of the class hierarchy. Being internal, it cannot be subclassed or instantiated by users. The only two immediate subclasses of `_ObjectOrNull` are `Object` and `Null`. Class members of `Object` that are relevant to `Null` shall be promoted to `_ObjectOrNull`. This impacts various sections of the language specification, including ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 10, “Classes”): “Every class has a single superclass except class ~~`Object`~~[[[`_ObjectOrNull`]]](#terms "INS: Text added or updated in the DSS") which has no superclass”.
+We define the internal class `_Anything` as the **new root** of the class hierarchy. Being internal, it cannot be subclassed or instantiated by users. `Object` and `Null` are immediate subclasses of `_Anything`, redeclared as:
+
+``` java
+abstract class _Anything { const _Anything(); }
+
+abstract class _Basic extends _Anything {
+  int get hashCode;
+  String toString();
+  dynamic noSuchMethod(Invocation invocation);
+  Type get runtimeType;
+}
+
+class Object extends _Anything implements _Basic {
+  const Object();
+  bool operator ==(other) => identical(this, other);
+  ... // Methods of _Basic are all declared external
+}
+```
+
+The definition of `Null` is the same as in [DartC](#terms "Classic (i.e., current) Dart") except that the class extends `_Anything` and implements `_Basic`. The semantic rules of equality ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.22 “Equality”), deal explicitly with cases where either operand is `null`. Thus `null` can never be a receiver nor an argument to the `==` operator, and so `==` is excluded from `_Basic`.
+
+> Comment. Declaring `_Anything` as a class without methods allows us to provide a conventional definition for `void` as an empty interface, realized only by `Null`:
+>
+> ``` java
+> abstract class void extends _Anything {}
+> class Null extends _Anything implements _Basic, void { /* Same as in DartC */ }
+> ```
+
+The changes proposed in this subsection impact various sections of the language specification, including ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 10, “Classes”): “Every class has a single superclass except class ~~`Object`~~[[[`_Anything`]]](#terms "INS: Text added or updated in the DSS") which has no superclass”.
 
 As is discussed below ([B.4.1](#ceylon-root)), [Ceylon](http://ceylon-lang.org) has a class hierarchy like the one proposed here for Dart.
 
@@ -675,7 +705,7 @@ These equations are part of the rewrite rules for the **normalization** of !*T* 
 
 It is a compile-time error if `!` is applied to `void`. Application of `!` to an element outside its domain is considered a *malformed* type ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.1, “Static Types”) and “any use of a malformed type gives rise to a static warning. A malformed type is then interpreted as `dynamic` by the static type checker and the runtime unless explicitly specified otherwise”. Alternatives are presented in [B.4.4](#semantics-of-bang-alt).
 
-> Comment. Currently in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), the only user expressible type outside of the domain of `!` is `Null` since `_ObjectOrNull` is not accessible to users ([B.2.1](#new-root)).
+> Comment. Currently in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), the only user expressible type outside of the domain of `!` is `Null` since `_Anything` is not accessible to users ([B.2.1](#new-root)).
 
 <a name="shared-type-op-semantics"></a>
 ### B.3.3 Runtime representation of type operators and other shared semantics
@@ -993,9 +1023,9 @@ The authors of [Ceylon](http://ceylon-lang.org) suggest that its `Anything` type
 -   `!dynamic` can be interpreted as the union of all *non-null* types, and hence a supertype of all non-null types.
 -   `?dynamic` = `dynamic` | `Null` = `dynamic`.
 
-Thus, `T << !dynamic` precisely when `T << Object` ([A.1.4](#def-subtype)). It follows that `T <: !dynamic` for any class type *T* other than `Null` and `_ObjectOrNull`.
+Thus, `T << !dynamic` precisely when `T << Object` ([A.1.4](#def-subtype)). It follows that `T <: !dynamic` for any class type *T* other than `Null` and `_Anything`.
 
-> Comment. From another perspective, we can say that `!dynamic` represents an unknown non-null type rooted at `Object`, and `?dynamic` represents an unknown type rooted at `_ObjectOrNull`.
+> Comment. From another perspective, we can say that `!dynamic` represents an unknown non-null type rooted at `Object`, and `?dynamic` represents an unknown type rooted at `_Anything`.
 
 <a name="bang-dynamic-subtype-of"></a>
 ### D.2.2 Defining `!dynamic <:` *S*
