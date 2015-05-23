@@ -168,7 +168,7 @@ Once a "critical mass" of this proposal's features have gained approval, a fully
 
 - [A.2](#non-null-types). *Drop semantic rules giving special treatment to* `null`. In particular, the static type of `null` is taken to be `Null`, not $\bot$ (while still allowing `null` to be returned for `void` functions). As a consequence, all non-`Null` class types (except `Object`, which is addressed next) lose [assignment compatibility][assignment compatible] with `null`, and hence *naturally recover* their status as *non-null types*.
 
-- [B.2](#nnbd). Create a *new class hierarchy root* named `_ObjectOrNull` with only two immediate subclasses: `Object` and `Null`. This new root is internal and hence inaccessible to users. Thus, `Object` _remains the implicit upper bound_ of classes.
+- [B.2](#nnbd). Create a *new class hierarchy root* named `_Anything` with only two immediate subclasses: `Object` and `Null`. This new root is internal and hence inaccessible to users. Thus, `Object` _remains the implicit upper bound_ of classes.
 
 - [B.2](#nnbd). Introduce _type operators_:
     - ?*T* defines the _nullable_ variant of type *T*;

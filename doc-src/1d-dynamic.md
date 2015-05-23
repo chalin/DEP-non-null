@@ -25,9 +25,9 @@ The authors of [Ceylon][] suggest that its `Anything` type [can be interpreted][
 - `!dynamic` can be interpreted as the union of all _non-null_ types, and hence a supertype of all non-null types.
 - `?dynamic` = `dynamic` | `Null` = `dynamic`.
 
-Thus, `T << !dynamic` precisely when `T << Object` ([A.1.4](#def-subtype)). It follows that `T <: !dynamic` for any class type *T* other than `Null` and `_ObjectOrNull`.
+Thus, `T << !dynamic` precisely when `T << Object` ([A.1.4](#def-subtype)). It follows that `T <: !dynamic` for any class type *T* other than `Null` and `_Anything`.
 
-> Comment. From another perspective, we can say that `!dynamic` represents an unknown non-null type rooted at `Object`, and `?dynamic` represents an unknown type rooted at `_ObjectOrNull`.
+> Comment. From another perspective, we can say that `!dynamic` represents an unknown non-null type rooted at `Object`, and `?dynamic` represents an unknown type rooted at `_Anything`.
 
 ### D.2.2 Defining `!dynamic <:` *S* {#bang-dynamic-subtype-of}
 

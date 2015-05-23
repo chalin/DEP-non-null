@@ -20,9 +20,9 @@ We expect the proportion of non-null vs. nullable declarations in Dart to be sim
 
 A consequence of dropping the special semantic rules for `null` ([A.2](#non-null-types)) is that all non-`Null` classes except `Object` lose [assignment compatibility][assignment compatible] with `Null`, and hence *naturally recover* their status as *non-null types*. In [DartC][], `Null` directly extends `Object` and so `Null <: Object`. This means that `Null` may still be [assigned to](#def-subtype) `Object`, effectively making `Object` nullable. We ensure that `Object` is non-null as follows.
 
-### B.2.1 Ensuring `Object` is non-null: elect `_ObjectOrNull` as a new root {#new-root}
+### B.2.1 Ensuring `Object` is non-null: elect `_Anything` as a new root {#new-root}
 
-We define the internal class `_ObjectOrNull` as the **new root** of the class hierarchy. Being internal, it cannot be subclassed or instantiated by users. The only two immediate subclasses of `_ObjectOrNull` are `Object` and `Null`. Class members of `Object` that are relevant to `Null` shall be promoted to `_ObjectOrNull`. This impacts various sections of the language specification, including ([DSS][] 10, "Classes"): "Every class has a single superclass except class [`Object`][del][`_ObjectOrNull`][ins] which has no superclass".
+We define the internal class `_Anything` as the **new root** of the class hierarchy. Being internal, it cannot be subclassed or instantiated by users. The only two immediate subclasses of `_Anything` are `Object` and `Null`. Class members of `Object` that are relevant to `Null` shall be promoted to `_Anything`. This impacts various sections of the language specification, including ([DSS][] 10, "Classes"): "Every class has a single superclass except class [`Object`][del][`_Anything`][ins] which has no superclass".
 
 As is discussed below ([B.4.1](#ceylon-root)), [Ceylon][] has a class hierarchy like the one proposed here for Dart.
 
@@ -128,7 +128,7 @@ These equations are part of the rewrite rules for the **normalization** of !*T* 
 
 It is a compile-time error if `!` is applied to `void`. Application of `!` to an element outside its domain is considered a _malformed_ type ([DSS][] 19.1, "Static Types") and "any use of a malformed type gives rise to a static warning. A malformed type is then interpreted as `dynamic` by the static type checker and the runtime unless explicitly specified otherwise". Alternatives are presented in [B.4.4](#semantics-of-bang-alt).
 
-> Comment. Currently in [DartNNBD][], the only user expressible type outside of the domain of `!` is `Null` since `_ObjectOrNull` is not accessible to users ([B.2.1](#new-root)).
+> Comment. Currently in [DartNNBD][], the only user expressible type outside of the domain of `!` is `Null` since `_Anything` is not accessible to users ([B.2.1](#new-root)).
 
 ### B.3.3 Runtime representation of type operators and other shared semantics {#shared-type-op-semantics}
 
