@@ -28,7 +28,7 @@
 [DSC 2015/01]: http://news.dartlang.org/2015/01/dart-language-evolution-discussed-in.html
 [DSS]: http://www.ecma-international.org/publications/standards/Ecma-408.htm
 [Dart Analyzer]: https://www.dartlang.org/tools/analyzer
-[Dart CHANGELOG]: https://github.com/dart-lang/bleeding_edge/blob/master/dart/CHANGELOG.md
+[Dart CHANGELOG]: https://github.com/dart-lang/sdk/blob/master/CHANGELOG.md
 [Dart Code Formatter]: https://www.dartlang.org/tools/dartfmt
 [Dart Dev Compiler]: https://github.com/dart-lang/dev_compiler
 [Dart Iterator API]: https://api.dartlang.org/apidocs/channels/be/dartdoc-viewer/dart:core.Iterator
@@ -116,7 +116,7 @@
 [Use Java 8 Optional]: http://www.oracle.com/technetwork/articles/java/java8-optional-2175753.html
 [assignment compatible]: #assignment-compatible
 [chalin]: https://github.com/chalin
-[dart/runtime/lib/integers_patch.dart#L48]: https://github.com/dart-lang/bleeding_edge/blob/master/dart/runtime/lib/integers_patch.dart#L48
+[dart/runtime/lib/integers_patch.dart#L48]: https://github.com/dart-lang/sdk/blob/master/runtime/lib/integers_patch.dart#L48
 [dart2js]: https://www.dartlang.org/tools/dart2js
 [del]: #terms "DEL: Text removed from the DSS"
 [dynamic type error]: #terms "A type error reported in checked mode"

@@ -1,6 +1,6 @@
 # Dart DEP for Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-05-23 (0.2.0)
+#### 2015-05-26 (0.2.1)
 
 -   [Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -377,7 +377,7 @@ Unavoidably, recovery of non-null types ([A.2](#non-null-types)), induces two **
 1.  Use *reflection* to query: the direct members of, or the supertype of, `Object` or `Null` ([B.2.1](#new-root)); or, the upper bound of a type parameter ([C.3.4](#default-type-param-bound)).
 2.  Perform *type tests* of the form *e* `is Object` since this will now return false for `null`. It seems unlikely though, that fielded code would actually contain such a type test given that it is always true in [DartC](#terms "Classic (i.e., current) Dart").
 
-We have noted that breaking changes of similar magnitude are sometimes incorporated in Dart minor releases—see the [Dart CHANGELOG](https://github.com/dart-lang/bleeding_edge/blob/master/dart/CHANGELOG.md).
+We have noted that breaking changes of similar magnitude are sometimes incorporated in Dart minor releases—see the [Dart CHANGELOG](https://github.com/dart-lang/sdk/blob/master/CHANGELOG.md).
 
 There are **no other backwards incompatible** changes impacting *production mode execution* ([G0, compatibility](#g0)).
 
@@ -1314,7 +1314,7 @@ With the eventual added support for [generic functions](https://github.com/leafp
 
 Notes:
 
--   The `source` argument of `parse()` should be non-null, see [dart/runtime/lib/integers\_patch.dart\#L48](https://github.com/dart-lang/bleeding_edge/blob/master/dart/runtime/lib/integers_patch.dart#L48).
+-   The `source` argument of `parse()` should be non-null, see [dart/runtime/lib/integers\_patch.dart\#L48](https://github.com/dart-lang/sdk/blob/master/runtime/lib/integers_patch.dart#L48).
 -   In conformance to the [guideline of E.1.1](#guideline), the following optional parameters are left as [NNBD](#part-nnbd "Non-Null By Default"):
 
     -   `defaultValue` of `factory int.fromEnvironment()`.
