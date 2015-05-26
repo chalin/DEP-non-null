@@ -194,7 +194,7 @@ Once a "critical mass" of this proposal's features have gained approval, a fully
 
 Other than the changes listed above, the semantics of [DartNNBD][] match [DartC][], most notably:
 
-- [B.3.4](#var-init). _Variable initialization_ semantics are untouched; i.e., `null` is the value of a variable when it is not explicitly initialized. Given that `null` is only [assignment compatible][] with `Null` in [DartNNBD][], this will result in [static warning][]s and [dynamic type error][]s for uninitialized variables declared to have a non-null type.
+- [B.3.4](#var-init). _Default variable initialization_ semantics are untouched; i.e., `null` is the value of a variable when it is not explicitly initialized. Given that `null` is only [assignment compatible][] with `Null` in [DartNNBD][], this will result in [static warning][]s and [dynamic type error][]s for uninitialized variables declared to have a non-null type.
 
 - [D.2](#dynamic). The role and semantics of `dynamic` are untouched. Thus, `dynamic` (and `?dynamic`) denote the "unknown type", supertype of all types. Also, e.g., in the absence of static type annotations or type arguments, `dynamic` is still assumed.
 
@@ -212,7 +212,7 @@ Other than the changes listed above, the semantics of [DartNNBD][] match [DartC]
 
 - [A.3.1](#why-nn-types). Why non-null *types*?
 - [A.3.2](#nullable-by-default). Embracing non-null types but preserving nullable-by-default?
-- [B.4.2](#var-init-alt). Initialization of non-null variables.
+- [B.4.2](#var-init-alt). Default initialization of non-null variables.
 - [B.4.3](#factory-constructor-alt). Factory constructors.
 - [B.4.4](#semantics-of-bang-alt). Dealing with `!Null`.
 - [B.4.5](#type-test-ambiguity-alt). Resolution of negated type test (`is!`) syntactic ambiguity.
@@ -230,7 +230,7 @@ Other than the changes listed above, the semantics of [DartNNBD][] match [DartC]
 
 This proposal has strictly upheld [G0, optional types](#g0), in particular, in the choices made to preserve the [DartC][] semantics:
 
-- Regarding (non-null) variable initialization ([B.3.4](#var-init) vs. [B.4.2](#var-init-alt)), and by
+- Regarding default (non-null) variable initialization ([B.3.4](#var-init) vs. [B.4.2](#var-init-alt)), and by
 - Leaving `dynamic`, the unknown type, as nullable ([D.2](#dynamic) vs. [D.3.2](#dynamic-alt)).
 
 Consequently, these features also support [G0, compatibility](#g0), and hence [G0, usability](#g0)---since fewer differences relative to [DartC][], and fewer special cases in the semantic rules, make [DartNNBD][] easier to learn and use---as well as [G0, ease migration](#g0).

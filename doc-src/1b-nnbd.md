@@ -168,9 +168,11 @@ Type expressions involving type operators shall be represented at runtime, in no
 - Reification ([C.4](#semantics-of-generics)).
 - Structural type tests of function types ([E.3.4](#function-subtype)).
 
-### B.3.4 Initialization of non-null variables is like [DartC][] {#var-init}
+### B.3.4 Default initialization of non-null variables is like [DartC][] {#var-init}
 
-We make no changes to the rules regarding variable initialization, even if a variable is statically declared as non-null. In particular, the following rule still applies ([DSS][] 8, "Variables"): "A variable that has not been initialized has the initial value `null`".
+We make no changes to the rules regarding default variable initialization, even if a variable is statically declared as non-null. In particular, the following rule still applies ([DSS][] 8, "Variables"): "A variable that has not been initialized has the initial value `null`".
+
+> Comment. The term *variable* refers to a "storage location in memory", and encompasses local variables, library variables, instance variables, etc. ([DSS][] 8).
 
 Explicit initialization checks are extended to also address cases of implicit initialization with `null`.
 
@@ -182,7 +184,7 @@ Explicit initialization checks are extended to also address cases of implicit in
 >		- [Dynamic type error][].
 >		- No effect on production mode execution.
 >
-> - The term *variable* refers to a "storage location in memory", and encompasses local variables, library variables, instance variables, etc. ([DSS][] 8).
+> - In the case of a local variable statically declared non-null but not explicitly initialized, a problem ([static warning][] or [dynamic type error][]) need only be reported if there is an attempt to use the local variable before it is explicitly assigned to.
 
 ## B.4 Discussion
 
@@ -198,11 +200,11 @@ class Object extends Anything
 
 Thus, [`Anything`][Ceylon `Anything` API] is defined as the *union type* of `Object` and `Null`.
 
-### B.4.2 Initialization of non-null variables, alternative approaches {#var-init-alt}
+### B.4.2 Default initialization of non-null variables, alternative approaches {#var-init-alt}
 
 Given a variable statically declared as non-null, some might prefer to see this proposal _mandate_ (i.e., issue a compile-time error) if the variable is not explicitly initialized with a value assignable to its statically declared type (and hence not `null`), but this would go against [G0, optional types](#g0).
 
-In our opinion, preserving the variable initialization semantics of [DartC][] is the only approach that is consistent with [G0, optional types](#g0). Also see [I.3.2](#language-evolution) for discussion of issues related to soundness. Though Dart's static type system is already unsound by design ([Brandt, 2011][]), this proposal does not contribute to (increase) the unsoundness because of non-null types.
+In our opinion, preserving the default variable initialization semantics of [DartC][] is the only approach that is consistent with [G0, optional types](#g0). Also see [I.3.2](#language-evolution) for discussion of issues related to soundness. Though Dart's static type system is already unsound by design ([Brandt, 2011][]), this proposal does not contribute to (increase) the unsoundness because of non-null types.
 
 ### B.4.3 Factory constructors, an alternative {#factory-constructor-alt}
 

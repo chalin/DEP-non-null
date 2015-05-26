@@ -1,6 +1,6 @@
 # Dart DEP for Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-05-26 (0.2.1)
+#### 2015-05-26 (0.2.2)
 
 -   [Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -46,10 +46,10 @@
             -   [(b) Core properties of `?`](#b-core-properties-of)
         -   [B.3.2 Semantics of `!`](#semantics-of-bang)
         -   [B.3.3 Runtime representation of type operators and other shared semantics](#shared-type-op-semantics)
-        -   [B.3.4 Initialization of non-null variables is like](#var-init)[DartC](#terms "Classic (i.e., current) Dart")
+        -   [B.3.4 Default initialization of non-null variables is like](#var-init)[DartC](#terms "Classic (i.e., current) Dart")
     -   [B.4 Discussion](#b.4-discussion)
         -   [B.4.1 Precedent:](#ceylon-root)[Ceylon](http://ceylon-lang.org)’s root is `Object` | `Null`
-        -   [B.4.2 Initialization of non-null variables, alternative approaches](#var-init-alt)
+        -   [B.4.2 Default initialization of non-null variables, alternative approaches](#var-init-alt)
         -   [B.4.3 Factory constructors, an alternative](#factory-constructor-alt)
         -   [B.4.4 Dealing with `!Null`, alternatives](#semantics-of-bang-alt)
         -   [B.4.5 Resolution of negated type test (`is!`) syntactic ambiguity, an alternative](#type-test-ambiguity-alt)
@@ -329,7 +329,7 @@ Once a “critical mass” of this proposal’s features have gained approval, a
 
 Other than the changes listed above, the semantics of [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics") match [DartC](#terms "Classic (i.e., current) Dart"), most notably:
 
--   [B.3.4](#var-init). *Variable initialization* semantics are untouched; i.e., `null` is the value of a variable when it is not explicitly initialized. Given that `null` is only [assignment compatible](#assignment-compatible) with `Null` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), this will result in [static warning](#terms "A problem reported by the static checker")s and [dynamic type error](#terms "A type error reported in checked mode")s for uninitialized variables declared to have a non-null type.
+-   [B.3.4](#var-init). *Default variable initialization* semantics are untouched; i.e., `null` is the value of a variable when it is not explicitly initialized. Given that `null` is only [assignment compatible](#assignment-compatible) with `Null` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), this will result in [static warning](#terms "A problem reported by the static checker")s and [dynamic type error](#terms "A type error reported in checked mode")s for uninitialized variables declared to have a non-null type.
 
 -   [D.2](#dynamic). The role and semantics of `dynamic` are untouched. Thus, `dynamic` (and `?dynamic`) denote the “unknown type”, supertype of all types. Also, e.g., in the absence of static type annotations or type arguments, `dynamic` is still assumed.
 
@@ -348,7 +348,7 @@ Other than the changes listed above, the semantics of [DartNNBD](#terms "Dart as
 
 -   [A.3.1](#why-nn-types). Why non-null *types*?
 -   [A.3.2](#nullable-by-default). Embracing non-null types but preserving nullable-by-default?
--   [B.4.2](#var-init-alt). Initialization of non-null variables.
+-   [B.4.2](#var-init-alt). Default initialization of non-null variables.
 -   [B.4.3](#factory-constructor-alt). Factory constructors.
 -   [B.4.4](#semantics-of-bang-alt). Dealing with `!Null`.
 -   [B.4.5](#type-test-ambiguity-alt). Resolution of negated type test (`is!`) syntactic ambiguity.
@@ -367,7 +367,7 @@ Other than the changes listed above, the semantics of [DartNNBD](#terms "Dart as
 
 This proposal has strictly upheld [G0, optional types](#g0), in particular, in the choices made to preserve the [DartC](#terms "Classic (i.e., current) Dart") semantics:
 
--   Regarding (non-null) variable initialization ([B.3.4](#var-init) vs. [B.4.2](#var-init-alt)), and by
+-   Regarding default (non-null) variable initialization ([B.3.4](#var-init) vs. [B.4.2](#var-init-alt)), and by
 -   Leaving `dynamic`, the unknown type, as nullable ([D.2](#dynamic) vs. [D.3.2](#dynamic-alt)).
 
 Consequently, these features also support [G0, compatibility](#g0), and hence [G0, usability](#g0)—since fewer differences relative to [DartC](#terms "Classic (i.e., current) Dart"), and fewer special cases in the semantic rules, make [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics") easier to learn and use—as well as [G0, ease migration](#g0).
@@ -719,9 +719,11 @@ Type expressions involving type operators shall be represented at runtime, in no
 -   Structural type tests of function types ([E.3.4](#function-subtype)).
 
 <a name="var-init"></a>
-### B.3.4 Initialization of non-null variables is like [DartC](#terms "Classic (i.e., current) Dart")
+### B.3.4 Default initialization of non-null variables is like [DartC](#terms "Classic (i.e., current) Dart")
 
-We make no changes to the rules regarding variable initialization, even if a variable is statically declared as non-null. In particular, the following rule still applies ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 8, “Variables”): “A variable that has not been initialized has the initial value `null`”.
+We make no changes to the rules regarding default variable initialization, even if a variable is statically declared as non-null. In particular, the following rule still applies ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 8, “Variables”): “A variable that has not been initialized has the initial value `null`”.
+
+> Comment. The term *variable* refers to a “storage location in memory”, and encompasses local variables, library variables, instance variables, etc. ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 8).
 
 Explicit initialization checks are extended to also address cases of implicit initialization with `null`.
 
@@ -732,7 +734,7 @@ Explicit initialization checks are extended to also address cases of implicit in
 >     -   [Static warning](#terms "A problem reported by the static checker").
 >     -   [Dynamic type error](#terms "A type error reported in checked mode").
 >     -   No effect on production mode execution.
-> -   The term *variable* refers to a “storage location in memory”, and encompasses local variables, library variables, instance variables, etc. ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 8).
+> -   In the case of a local variable statically declared non-null but not explicitly initialized, a problem ([static warning](#terms "A problem reported by the static checker") or [dynamic type error](#terms "A type error reported in checked mode")) need only be reported if there is an attempt to use the local variable before it is explicitly assigned to.
 >
 <a name="b.4-discussion"></a>
 ## B.4 Discussion
@@ -751,11 +753,11 @@ class Object extends Anything
 Thus, [`Anything`](http://ceylon-lang.org/documentation/1.0/api/ceylon/language/Anything.type.html) is defined as the *union type* of `Object` and `Null`.
 
 <a name="var-init-alt"></a>
-### B.4.2 Initialization of non-null variables, alternative approaches
+### B.4.2 Default initialization of non-null variables, alternative approaches
 
 Given a variable statically declared as non-null, some might prefer to see this proposal *mandate* (i.e., issue a compile-time error) if the variable is not explicitly initialized with a value assignable to its statically declared type (and hence not `null`), but this would go against [G0, optional types](#g0).
 
-In our opinion, preserving the variable initialization semantics of [DartC](#terms "Classic (i.e., current) Dart") is the only approach that is consistent with [G0, optional types](#g0). Also see [I.3.2](#language-evolution) for discussion of issues related to soundness. Though Dart’s static type system is already unsound by design ([Brandt, 2011](https://www.dartlang.org/articles/why-dart-types "Why Dart Types Are Optional and Unsound")), this proposal does not contribute to (increase) the unsoundness because of non-null types.
+In our opinion, preserving the default variable initialization semantics of [DartC](#terms "Classic (i.e., current) Dart") is the only approach that is consistent with [G0, optional types](#g0). Also see [I.3.2](#language-evolution) for discussion of issues related to soundness. Though Dart’s static type system is already unsound by design ([Brandt, 2011](https://www.dartlang.org/articles/why-dart-types "Why Dart Types Are Optional and Unsound")), this proposal does not contribute to (increase) the unsoundness because of non-null types.
 
 <a name="factory-constructor-alt"></a>
 ### B.4.3 Factory constructors, an alternative
