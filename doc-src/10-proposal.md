@@ -46,7 +46,7 @@ as is pointed out in [DDC issue #64][]. Under [NNBD][], the `dart.notNull()` wra
 
 Interest in non-null types for Dart and related projects has been manifested in:
 
-- [Dart issue #22][], starred by 197 individuals, is a request for *support for non-nullable types*.
+- [Dart issue #22][], starred by 198 individuals, is a request for *support for non-nullable types*.
 - Bob Nystrom's 2011 strawman _[proposal for Null-safety in Dart][Nystrom, 2011]_ suggested the use of non-null types and [NNBD][]. Unfortunately, at the time, the language committee was busy with other issues that took precedence.
 - [Chrome V8][] team is giving thought to [NNBD][] for [JS][]; see [Experiments with Strengthening JavaScript][], especially p. 39 (the second to last page) of [JSExperimentalDirections][].
 - Finally, non-null types are on [Lasse R.H. Nielsen's 2014 wish list][dart-misc-1], and so far, almost half of his wishes have either come true or are the subject of a [DEP][] ;).

@@ -42,7 +42,9 @@
 [Dart VM]: https://www.dartlang.org/tools/dart-vm
 [Dart docgen]: https://www.dartlang.org/tools/dartdocgen
 [Dart for the Entire Web]: http://news.dartlang.org/2015/03/dart-for-entire-web.html
-[Dart issue #22]: https://code.google.com/p/dart/issues/detail?id=22
+[Dart issue #22]: https://code.google.com/p/dart/issues/detail?id=22 "Support non-nullable types"
+[Dart issue #5545]: https://code.google.com/p/dart/issues/detail?id=5545 "Add non-null accepting type annotations"
+[Dart pub Optional]: https://pub.dartlang.org/packages/optional
 [DartC]: #terms "Classic (i.e., current) Dart"
 [DartNNBD]: #terms "Dart as defined in this proposal with Non-Null By Default semantics"
 [Dietl et al., 2011]: http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf "Building and using pluggable type-checkers, ICSE'11"
@@ -112,8 +114,8 @@
 [TS issue #1265]: https://github.com/Microsoft/TypeScript/issues/1265
 [TS issue #185]: https://github.com/Microsoft/TypeScript/issues/185
 [TS issue #3003]: https://github.com/Microsoft/TypeScript/issues/3003
-[TSLS]: http://www.typescriptlang.org/Content/TypeScript%20Language%20Specification.pdf
 [TSLS 3.2.6]: https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md#3.2.6
+[TSLS]: http://www.typescriptlang.org/Content/TypeScript%20Language%20Specification.pdf
 [TypeScript]: http://www.typescriptlang.org
 [Use Java 8 Optional]: http://www.oracle.com/technetwork/articles/java/java8-optional-2175753.html
 [assignment compatible]: #assignment-compatible
