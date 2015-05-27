@@ -202,9 +202,43 @@ Thus, [`Anything`][Ceylon `Anything` API] is defined as the *union type* of `Obj
 
 ### B.4.2 Default initialization of non-null variables, alternative approaches {#var-init-alt}
 
-Given a variable statically declared as non-null, some might prefer to see this proposal _mandate_ (i.e., issue a compile-time error) if the variable is not explicitly initialized with a value assignable to its statically declared type (and hence not `null`), but this would go against [G0, optional types](#g0).
+#### (a) Preserving [DartC][] semantics is consistent with JavaScript & TypeScript
 
-In our opinion, preserving the default variable initialization semantics of [DartC][] is the only approach that is consistent with [G0, optional types](#g0). Also see [I.3.2](#language-evolution) for discussion of issues related to soundness. Though Dart's static type system is already unsound by design ([Brandt, 2011][]), this proposal does not contribute to (increase) the unsoundness because of non-null types.
+Our main proposal ([B.3.4](#var-init)) preserves the [DartC][] semantics, i.e., a variable not explicitly initialized is set to `null`. In JavaScript, such variables are set to `undefined` ([ES5 8.1][]), and [TypeScript][] conforms to this behavior as well ([TSLS 3.2.6][]). 
+
+For variables statically declared as non-null, some might prefer to see this proposal _mandate_ (i.e., issue a compile-time error) if the variable is not explicitly initialized (with a value assignable to its statically declared type, and hence not `null`) but this would go against [G0, optional types](#g0).
+
+In our opinion, preserving the default variable initialization semantics of [DartC][] is the only approach that is consistent with [G0, optional types](#g0). Also see [I.3.2](#language-evolution) for a discussion of issues related to soundness. Although Dart's static type system is already unsound by design ([Brandt, 2011][]), this proposal does not contribute to (increase) the unsoundness because of non-null types. [NNBD][] scope and local variables are also discussed in [E.3.2(a)](#local-var-alt).
+
+#### (b) Implicit type-specific initialization of non-null variables {- #type-specific-init}
+
+In some other languages (especially in the presence of primitive types), it is conventional to have type-specific default initialization rules---e.g., integers and booleans are initialized to 0 and false, respectively. Due to our desired conformance to [G0, optional types](#g0), it is not possible to infer such type-specific default initialization from a static type annotation _alone_. On the other hand, special declarator syntax, such as (where `T` is a class type and `<U,...>` represents zero or more type arguments):
+
+```dart
+  !T<U,...> v;
+```
+could be treated as syntactic sugar for
+
+```dart
+  T<U,...> v = T<U,...>.DEFAULT_INIT();
+```
+
+In production mode this would be interpreted as:
+
+```dart
+  var v = T<U,...>.DEFAULT_INIT();
+```
+
+Any class type `T`, for which this form of initialization is desired, would provide `DEFAULT_INIT()` as a factory constructor, e.g.:
+
+```dart
+abstract class int extends num {
+  factory int.DEFAULT_INIT() => 0;
+  ...
+}
+```
+
+Although what we are proposing here effectively overloads the meaning of meta type annotation `!`, there is no ambiguity since, in an [NNBD][] context, a class type *T* is already non-null, and hence !*T*---which is not in normal form ([B.3.3](#shared-type-op-semantics))---can be interpreted as a request for an implicit type-specific initialization. This even extends nicely to handle `!T` optional parameter declarations ([E.1.1](#opt-func-param)).
 
 ### B.4.3 Factory constructors, an alternative {#factory-constructor-alt}
 

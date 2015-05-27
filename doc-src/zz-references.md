@@ -47,6 +47,7 @@
 [DartNNBD]: #terms "Dart as defined in this proposal with Non-Null By Default semantics"
 [Dietl et al., 2011]: http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf "Building and using pluggable type-checkers, ICSE'11"
 [Dietl, 2014]: http://cs.au.dk/~amoeller/tapas2014/dietl.pdf
+[ES5 8.1]: http://ecma-international.org/ecma-262/5.1/#sec-8.1
 [Eberhardt, 2014]: http://blog.scottlogic.com/2014/11/20/swift-initialisation.html
 [Eclipse JDT, Null External Annotations]: https://wiki.eclipse.org/JDT_Core/Null_Analysis/External_Annotations
 [Eclipse JDT]: https://eclipse.org/jdt
@@ -112,6 +113,7 @@
 [TS issue #185]: https://github.com/Microsoft/TypeScript/issues/185
 [TS issue #3003]: https://github.com/Microsoft/TypeScript/issues/3003
 [TSLS]: http://www.typescriptlang.org/Content/TypeScript%20Language%20Specification.pdf
+[TSLS 3.2.6]: https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md#3.2.6
 [TypeScript]: http://www.typescriptlang.org
 [Use Java 8 Optional]: http://www.oracle.com/technetwork/articles/java/java8-optional-2175753.html
 [assignment compatible]: #assignment-compatible
