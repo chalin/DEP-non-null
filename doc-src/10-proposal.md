@@ -217,6 +217,7 @@ Other than the changes listed above, the semantics of [DartNNBD][] match [DartC]
 - [B.4.4](#semantics-of-bang-alt). Dealing with `!Null`.
 - [B.4.5](#type-test-ambiguity-alt). Resolution of negated type test (`is!`) syntactic ambiguity.
 - [B.4.6](#type-anno-alt). Encoding `?` and `!` as metadata.
+- [B.4.7](#object-not-nullable-alt). Ensuring `Object` is non-null: making `Null` a root too.
 - [C.5.1](#nullable-type-op-alt). Loss of expressivity due to union type interoperability.
 - [C.5.2](#lower-bound-for-maybe). Lower bounds to distinguish nullable/maybe-nullable parameters.
 - [C.5.3](#type-param-not-null). Statically constraining a type parameter to be nullable but _not_ `Null`.

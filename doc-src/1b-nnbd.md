@@ -267,3 +267,31 @@ Note that there is no _class name_ *T* that can be written in a non-null type te
 Use of specialized syntax for meta type annotations `?` and `!` requires changes to Dart tooling front ends, impacting [G0, ease migration](#g0). We can _almost_ do away with such front-end changes by encoding the meta type annotations as metadata such as `@NonNull` and `@Nullable`. We write "almost" because Dart metadata annotations would first need to be (fully) extended to types through an equivalent of [JSR-308][] which extended Java's [metadata facility to types][JSR-308 explained]. Broadened support for type metadata (which was mentioned in the [DEP 2015/03/18][] meeting) could be generally beneficial since nullity type annotations are only one among a variety of useful kinds of type annotation. E.g., the [Checker Framework][], created jointly with JSR itself by the team that realized [JSR-308][], offers 20 checkers as examples, not the least of which is the [Nullness Checker][]. It might also make sense to consider *internally* representing `?` and `!` as type metadata. But then again, special status may make processing of this core feature more efficient in both tooling and runtimes.
 
 Regardless, the use of the single character meta type annotations `?` and `!` seems to have become quite common: it is certainly much shorter to type and it makes for a less noisy syntax.
+
+### B.4.7 Ensuring `Object` is non-null: making `Null` a root too {#object-not-nullable-alt}
+
+An alternative to creating a new class hierarchy root ([B.2.1](#new-root)) is to create a class hierarchy _forest_ with two roots `Object` and `Null`. This has the advantage of being a less significant change to the class hierarchy, benefiting [G0, ease migration](#g0), though it is less conventional.
+
+```diff
+  class Object {
+    const Object();
+    bool operator ==(other) => identical(this, other);
+    external int get hashCode;
+    external String toString();
+    external dynamic noSuchMethod(Invocation invocation);
+    external Type get runtimeType;
+    }
+
+- class Null {
++ class Null /*no supertype*/ {
+    factory Null._uninstantiable() {
+      throw new UnsupportedError('class Null cannot be instantiated');
+    }
++   external int get hashCode;
+    String toString() => "null";
++   external dynamic noSuchMethod(Invocation invocation);
++   external Type get runtimeType;
+  }
+```
+
+Note that `dynamic` remains the top of the subtype relation.

@@ -1,6 +1,6 @@
 # Dart DEP for Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-05-27 (0.3.1)
+#### 2015-06-05 (0.4.0)
 
 -   [Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -56,6 +56,7 @@
         -   [B.4.4 Dealing with `!Null`, alternatives](#semantics-of-bang-alt)
         -   [B.4.5 Resolution of negated type test (`is!`) syntactic ambiguity, an alternative](#type-test-ambiguity-alt)
         -   [B.4.6 Encoding `?` and `!` as metadata](#type-anno-alt)
+        -   [B.4.7 Ensuring `Object` is non-null: making `Null` a root too](#object-not-nullable-alt)
 -   [Part C: Generics](#part-generics)
     -   [C.1 Motivation: enhanced generics through non-null types](#c.1-motivation-enhanced-generics-through-non-null-types)
     -   [C.2 Design goals for this part](#generics-design-goals)
@@ -355,6 +356,7 @@ Other than the changes listed above, the semantics of [DartNNBD](#terms "Dart as
 -   [B.4.4](#semantics-of-bang-alt). Dealing with `!Null`.
 -   [B.4.5](#type-test-ambiguity-alt). Resolution of negated type test (`is!`) syntactic ambiguity.
 -   [B.4.6](#type-anno-alt). Encoding `?` and `!` as metadata.
+-   [B.4.7](#object-not-nullable-alt). Ensuring `Object` is non-null: making `Null` a root too.
 -   [C.5.1](#nullable-type-op-alt). Loss of expressivity due to union type interoperability.
 -   [C.5.2](#lower-bound-for-maybe). Lower bounds to distinguish nullable/maybe-nullable parameters.
 -   [C.5.3](#type-param-not-null). Statically constraining a type parameter to be nullable but *not* `Null`.
@@ -829,6 +831,35 @@ Note that there is no *class name* *T* that can be written in a non-null type te
 Use of specialized syntax for meta type annotations `?` and `!` requires changes to Dart tooling front ends, impacting [G0, ease migration](#g0). We can *almost* do away with such front-end changes by encoding the meta type annotations as metadata such as `@NonNull` and `@Nullable`. We write “almost” because Dart metadata annotations would first need to be (fully) extended to types through an equivalent of [JSR-308](https://jcp.org/en/jsr/detail?id=308) which extended Java’s [metadata facility to types](http://www.oracle.com/technetwork/articles/java/ma14-architect-annotations-2177655.html). Broadened support for type metadata (which was mentioned in the [DEP 2015/03/18](https://github.com/dart-lang/dart_enhancement_proposals/blob/master/Meetings/2015-03-18%20DEP%20Committee%20Meeting.md#more-proposals) meeting) could be generally beneficial since nullity type annotations are only one among a variety of useful kinds of type annotation. E.g., the [Checker Framework](http://checkerframework.org), created jointly with JSR itself by the team that realized [JSR-308](https://jcp.org/en/jsr/detail?id=308), offers 20 checkers as examples, not the least of which is the [Nullness Checker](http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#nullness-checker). It might also make sense to consider *internally* representing `?` and `!` as type metadata. But then again, special status may make processing of this core feature more efficient in both tooling and runtimes.
 
 Regardless, the use of the single character meta type annotations `?` and `!` seems to have become quite common: it is certainly much shorter to type and it makes for a less noisy syntax.
+
+<a name="object-not-nullable-alt"></a>
+### B.4.7 Ensuring `Object` is non-null: making `Null` a root too
+
+An alternative to creating a new class hierarchy root ([B.2.1](#new-root)) is to create a class hierarchy *forest* with two roots `Object` and `Null`. This has the advantage of being a less significant change to the class hierarchy, benefiting [G0, ease migration](#g0), though it is less conventional.
+
+``` diff
+  class Object {
+    const Object();
+    bool operator ==(other) => identical(this, other);
+    external int get hashCode;
+    external String toString();
+    external dynamic noSuchMethod(Invocation invocation);
+    external Type get runtimeType;
+    }
+
+- class Null {
++ class Null /*no supertype*/ {
+    factory Null._uninstantiable() {
+      throw new UnsupportedError('class Null cannot be instantiated');
+    }
++   external int get hashCode;
+    String toString() => "null";
++   external dynamic noSuchMethod(Invocation invocation);
++   external Type get runtimeType;
+  }
+```
+
+Note that `dynamic` remains the top of the subtype relation.
 
 <a name="part-generics"></a>
 # Part C: Generics
