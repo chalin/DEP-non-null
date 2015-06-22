@@ -7,12 +7,10 @@
 // Handles:
 // - Special "links" for ins/del.
 // - Format "Comment" as \sf.
-//
-// To do: ?
-// - Translate \bot into ⊥ for .md format?
 
 var pandoc = require('pandoc-filter');
 var Str = pandoc.Str;
+var optMd = process.argv.length > 2 && process.argv[2] === '--md';
 
 if (typeof String.prototype.startsWith != 'function') {
   // see below for better implementation!
@@ -68,6 +66,22 @@ function action(type, value, format, meta) {
             pandoc.RawBlock('html','<a name="' + name + '"></a>'),
             pandoc.Header(value[0], value[1], value[2])
         ];
+    }
+    
+    if (optMd && type === 'Math') {
+        var mathText = value[1]
+            .replace(/\\cd{([^}]+)}/g, '$1')
+            .replace(/\\bot\b/g, '⊥')
+            .replace(/\\Longleftrightarrow\b/g, '⟺')
+            .replace(/\\DYNAMIC\b/g, 'dynamic')
+            .replace(/\\ldots\b/g, '...')
+            .replace(/\\le\b/g, '≤')
+            .replace(/\\botObject\b/g, '⊥_Object') // x~subscript~
+            .replace(/{}/g, '')
+        ;
+        return (mathText === '⊥' || mathText === '⟺')
+            ? Str(mathText)
+            : pandoc.Emph([Str(mathText)]);
     }
 }
 

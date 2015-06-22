@@ -20,7 +20,8 @@ TARGET=$(ROOT)/doc
 DEP_NN=dep-non-null
 
 PANDOC_PIPE_HD=$(PANDOC) -f markdown $(OPTS) $(DOCSRC) -t json | $(FILTER)
-PANDOC_PIPE=$(PANDOC_PIPE_HD) | $(PANDOC) $(OPTS) -f json
+PANDOC_TL=$(PANDOC) $(OPTS) -f json
+PANDOC_PIPE=$(PANDOC_PIPE_HD) | $(PANDOC_TL)
 
 #-------------------------------------------------------------------------------
 
@@ -61,7 +62,7 @@ $(BUILD_DIR):
 md: prep mdgen mdcp
 
 mdgen: $(DOC_TMP)/01-front-matter.md $(DOC_TMP)/toc.md
-	$(PANDOC_PIPE) \
+	$(PANDOC_PIPE_HD) --md | $(PANDOC_TL) \
 		-H $(DOC_TMP)/01-front-matter.md \
 		-H $(DOC_TMP)/toc.md \
 		-t markdown_github -o $(DOC_TMP)/$(DEP_NN).md

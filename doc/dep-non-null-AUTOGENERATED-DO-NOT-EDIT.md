@@ -305,7 +305,7 @@ Once a “critical mass” of this proposal’s features have gained approval, a
 
 **Core language design decisions**:
 
--   [A.2](#non-null-types). *Drop semantic rules giving special treatment to* `null`. In particular, the static type of `null` is taken to be `Null`, not \(\bot\) (while still allowing `null` to be returned for `void` functions). As a consequence, all non-`Null` class types (except `Object`, which is addressed next) lose [assignment compatibility](#assignment-compatible) with `null`, and hence *naturally recover* their status as *non-null types*.
+-   [A.2](#non-null-types). *Drop semantic rules giving special treatment to* `null`. In particular, the static type of `null` is taken to be `Null`, not ⊥ (while still allowing `null` to be returned for `void` functions). As a consequence, all non-`Null` class types (except `Object`, which is addressed next) lose [assignment compatibility](#assignment-compatible) with `null`, and hence *naturally recover* their status as *non-null types*.
 
 -   [B.2](#nnbd). Create a *new class hierarchy root* named `_Anything` with only two immediate subclasses: `Object` and `Null`. This new root is internal and hence inaccessible to users. Thus, `Object` *remains the implicit upper bound* of classes.
 
@@ -433,7 +433,7 @@ As is illustrated above, the `Null` type is unrelated to the type `int`. In fact
 
 While the static type of `$null` is `Null`, the language specification has a special rule used to establish the static type of `null`. This rule makes `null` [assignment compatible](#assignment-compatible) with any type *T*, including `void` ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.2, “Null”):
 
-> The static type of `null` is \(\bot\) (bottom). *(Rationale) The decision to use \(\bot\) instead of `Null` allows `null` to be assigned everywhere without complaint by the static checker.*
+> The static type of `null` is ⊥ (bottom). *(Rationale) The decision to use ⊥ instead of `Null` allows `null` to be assigned everywhere without complaint by the static checker.*
 
 Because bottom is a subtype of every type ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.7, “Type Void”), `null` can be assigned to or used as an initializer for a variable of any type, without a [static warning](#terms "A problem reported by the static checker") or [dynamic type error](#terms "A type error reported in checked mode") ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.19; 19.4, “Interface Types”).
 
@@ -465,27 +465,27 @@ i is Null, j is Null
 Note that `Null` is the `runtimeType` of both `null` and `$null`; bottom is not a runtime type.
 
 <a name="def-subtype"></a>
-### A.1.4 Relations over types: `<<`, `<:`, and \(\Longleftrightarrow\)
+### A.1.4 Relations over types: `<<`, `<:`, and ⟺
 
 We reproduce here the definitions of essential binary relations over Dart types found in [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.4, “Interface Types”. We will appeal to these definitions throughout the proposal. Let *S* and *T* be types.
 
 <a name="assignment-compatible"></a>
 
--   *T* may be *assigned to* *S*, written \(T \Longleftrightarrow S\), iff either \(T <: S\) or \(S <: T\). (Let *T* be the static type of *e*. We will sometimes write “*e* may be assigned to *S*” when we mean that “*T* may be assigned to *S*”. Given that this relation is symmetric, we will sometimes write that *S* and *T* are **assignment compatible**.)
+-   *T* may be *assigned to* *S*, written *T ⟺ S*, iff either *T \<: S* or *S \<: T*. (Let *T* be the static type of *e*. We will sometimes write “*e* may be assigned to *S*” when we mean that “*T* may be assigned to *S*”. Given that this relation is symmetric, we will sometimes write that *S* and *T* are **assignment compatible**.)
 
--   *T* is a *subtype* of *S*, written \(T <: S\), iff \([\bot/\DYNAMIC{}]T << S\).
+-   *T* is a *subtype* of *S*, written *T \<: S*, iff *[⊥/dynamic]T \<\< S*.
 
--   \(T\) is *more specific than* \(S\), written \(T << S\), if one of the following conditions is met:
-    -   \(T\) is \(S\).
-    -   T is \(\bot\).
+-   *T* is *more specific than* *S*, written *T \<\< S*, if one of the following conditions is met:
+    -   *T* is *S*.
+    -   T is ⊥.
     -   S is .
-    -   \(S\) is a direct supertype of \(T\).
-    -   \(T\) is a type parameter and \(S\) is the upper bound of \(T\).
-    -   \(T\) is a type parameter and \(S\) is .
-    -   \(T\) is of the form \(I<T_1, \ldots, T_n>\) and \(S\) is of the form \(I<S_1, \ldots, S_n>\) and: \(T_i << S_i, 1 \le i \le n\)
-    -   \(T\) and \(S\) are both function types, and \(T << S\) under the rules of [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.5.
-    -   \(T\) is a function type and \(S\) is .
-    -   \(T << U\) and \(U << S\).
+    -   *S* is a direct supertype of *T*.
+    -   *T* is a type parameter and *S* is the upper bound of *T*.
+    -   *T* is a type parameter and *S* is .
+    -   *T* is of the form *I\<T\_1, ..., T\_n\>* and *S* is of the form *I\<S\_1, ..., S\_n\>* and: *T\_i \<\< S\_i, 1 ≤ i ≤ n*
+    -   *T* and *S* are both function types, and *T \<\< S* under the rules of [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.5.
+    -   *T* is a function type and *S* is .
+    -   *T \<\< U* and *U \<\< S*.
 
 <a name="non-null-types"></a>
 ## A.2 Feature details: recovering non-null types
@@ -495,7 +495,7 @@ To recover the general interpretation of a class type *T* as non-null, we propos
 <a name="type-of-null"></a>
 ### A.2.1 `Null` is the static type of `null`
 
-We drop the rule that attributes a special static type to `null`, and derive the static type of `null` normally as it would be done for any constant declared of type `Null` ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.2, “Null”): “~~The static type of `null` is \(\bot\) (bottom). *(Rationale) The decision to use \(\bot\) … checker*.~~”.
+We drop the rule that attributes a special static type to `null`, and derive the static type of `null` normally as it would be done for any constant declared of type `Null` ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.2, “Null”): “~~The static type of `null` is ⊥ (bottom). *(Rationale) The decision to use ⊥ … checker*.~~”.
 
 <a name="null-for-void"></a>
 ### A.2.2 `Null` may be assigned to `void`
@@ -504,7 +504,7 @@ As explained in [DSS](http://www.ecma-international.org/publications/standards/E
 
 > Comment. Interestingly, a `void` function in [Ceylon](http://ceylon-lang.org) is considered to have the return type `Anything`, though such functions always return `null`. Identification with `Anything` is to permit reasonable function subtyping ([[Ceylon functions](http://ceylon-lang.org/documentation/1.1/spec/html/declarations.html#functions)).
 
-In [DartC](#terms "Classic (i.e., current) Dart") checked mode, `void` functions can either implicitly or explicitly return `null` without a [static warning](#terms "A problem reported by the static checker") or [dynamic type error](#terms "A type error reported in checked mode"). As was mentioned, this is because the static type of `null` is taken as \(\bot\) in [DartC](#terms "Classic (i.e., current) Dart"). In [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), we make explicit that `Null` can be *assigned to* `void`, by establishing that `Null` is more specific than `void` ([A.1.4](#def-subtype)): `Null << void`.
+In [DartC](#terms "Classic (i.e., current) Dart") checked mode, `void` functions can either implicitly or explicitly return `null` without a [static warning](#terms "A problem reported by the static checker") or [dynamic type error](#terms "A type error reported in checked mode"). As was mentioned, this is because the static type of `null` is taken as ⊥ in [DartC](#terms "Classic (i.e., current) Dart"). In [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), we make explicit that `Null` can be *assigned to* `void`, by establishing that `Null` is more specific than `void` ([A.1.4](#def-subtype)): `Null << void`.
 
 > Comment. In a sense, this makes explicit the fact that `Null` is being treated as a “carrier type” for `void` in Dart. `Null` is a [unit type](http://en.wikipedia.org/wiki/Unit_type), and hence returning `null` conveys no information. The above also fixes the slight irregularity noted in [A.1.1](#dartc-static-checking): in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), no [static warning](#terms "A problem reported by the static checker") will result from a statement like `return $null;` used inside a `void` function (where `$null` is declared as a `const Null`).
 
@@ -515,7 +515,7 @@ Special provisions made for `null` in the [DartC](#terms "Classic (i.e., current
 
 -   [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.19, “Assignment”: In checked mode, it is a dynamic type error if ~~*o* is not null and~~ the interface of the class of *o* is not a subtype of the actual type (19.8.1) of *v*.
 
--   [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 17.12, “Return”, e.g., for a synchronous function: it is a dynamic type error if ~~\(o\) is not `null` and~~ the runtime type of \(o\) is not a subtype of the actual return type of \(f\).
+-   [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 17.12, “Return”, e.g., for a synchronous function: it is a dynamic type error if ~~*o* is not `null` and~~ the runtime type of *o* is not a subtype of the actual return type of *f*.
 
 We will address other similar ancillary changes to the semantics once a “critical mass” of this proposal’s features have gained approval ([7](#alt-and-deliverables)).
 
@@ -816,7 +816,7 @@ There has been some discussions of the possible elimination of `new` and/or `con
 
 In the absence of generics, `!Null` could simply be reported as a compile-time error. With generics, the issue is more challenging since we must deal with type expressions like `!T` possibly when type parameter `T` is instantiated with `Null` ([Part C](#part-generics)).
 
-While we proposed, in [B.3.2](#semantics-of-bang), to define !*T* as malformed when *T* is `Null`, alternatives include treating it as (i) \(\bot\), or (ii) a distinct empty (error) type that is assignment compatible with no other type. The latter would introduce a new way of handling type errors to Dart, in contrast to the current uniform treatment of such “errored types” as malformed instead. Use of \(\bot\) would also be a new feature since, to our knowledge, no type expression can be \(\bot\) in [DartC](#terms "Classic (i.e., current) Dart"). Hence both of these alternatives introduce extra complexity, thus decreasing [G0, usability](#g0) and increasing retooling costs ([G0, ease migration](#g0)).
+While we proposed, in [B.3.2](#semantics-of-bang), to define !*T* as malformed when *T* is `Null`, alternatives include treating it as (i) ⊥, or (ii) a distinct empty (error) type that is assignment compatible with no other type. The latter would introduce a new way of handling type errors to Dart, in contrast to the current uniform treatment of such “errored types” as malformed instead. Use of ⊥ would also be a new feature since, to our knowledge, no type expression can be ⊥ in [DartC](#terms "Classic (i.e., current) Dart"). Hence both of these alternatives introduce extra complexity, thus decreasing [G0, usability](#g0) and increasing retooling costs ([G0, ease migration](#g0)).
 
 <a name="type-test-ambiguity-alt"></a>
 ### B.4.5 Resolution of negated type test (`is!`) syntactic ambiguity, an alternative
@@ -1102,13 +1102,13 @@ Thus, `T << !dynamic` precisely when `T << Object` ([A.1.4](#def-subtype)). It f
 <a name="bang-dynamic-subtype-of"></a>
 ### D.2.2 Defining `!dynamic <:` *S*
 
-Let \(T\) and \(S\) be normalized types ([E.1.2](#normalization)). We introduce, \(\botObject\) to represent the bottom element of the non-null type subhierarchy and add the following as one of the conditions to be met for \(T << S\) to hold ([A.1.4](#def-subtype)):
+Let *T* and *S* be normalized types ([E.1.2](#normalization)). We introduce, *⊥\_Object* to represent the bottom element of the non-null type subhierarchy and add the following as one of the conditions to be met for *T \<\< S* to hold ([A.1.4](#def-subtype)):
 
-> \(T\) is \(\botObject\) and \(S << \cd{Object}\).
+> *T* is *⊥\_Object* and *S \<\< Object*.
 
-We refine `<:` in the following backwards compatible manner: \(T <: S\) iff
+We refine `<:` in the following backwards compatible manner: *T \<: S* iff
 
-> \([\bot/\DYNAMIC{}]U << S\) where \(U = [\botObject/!\DYNAMIC{}]T\).
+> *[⊥/dynamic]U \<\< S* where *U = [⊥\_Object/!dynamic]T*.
 
 See [D.3.3](#bang-dynamic-subtype-of-alt) for a discussion and alternative.
 
@@ -1139,9 +1139,9 @@ The main disadvantage of this alternative is that [static warning](#terms "A pro
 
 The [DartC](#terms "Classic (i.e., current) Dart") definition of the subtype relation ([A.1.4](#def-subtype)) states that *S* `<:` *T* iff
 
-> \([\bot/\DYNAMIC{}]S << T\).
+> *[⊥/dynamic]S \<\< T*.
 
-Replacing `dynamic` by \(\bot\) ensures that expressions having the static type `dynamic` can “be assigned everywhere without complaint by the static checker” ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.2, “Null”), and that `dynamic` is a valid type argument for any type parameter.
+Replacing `dynamic` by ⊥ ensures that expressions having the static type `dynamic` can “be assigned everywhere without complaint by the static checker” ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.2, “Null”), and that `dynamic` is a valid type argument for any type parameter.
 
 The refined definitions of `<<` and `<:` given in [D.2.2](#bang-dynamic-subtype-of) allows `!dynamic` to be:
 
@@ -1150,7 +1150,7 @@ The refined definitions of `<<` and `<:` given in [D.2.2](#bang-dynamic-subtype-
 
 Introducing a new bottom element for the `Object` subhierarchy most accurately captures our needs thought it renders the semantics more complex, decreasing [G0, usability](#g0) and increasing tool reengineering costs.
 
-An alternative, allowing us to avoid this extra complexity, is to treat `!dynamic` simply as \(\bot\). What we lose, are [static warning](#terms "A problem reported by the static checker")s and/or [dynamic type error](#terms "A type error reported in checked mode")s when: an expression of the static type `!dynamic` is assigned to variable declared as `Null` and, when `!dynamic` is used as a type argument for a `Null` type parameter. But such uses of `Null` are likely to be rare.
+An alternative, allowing us to avoid this extra complexity, is to treat `!dynamic` simply as ⊥. What we lose, are [static warning](#terms "A problem reported by the static checker")s and/or [dynamic type error](#terms "A type error reported in checked mode")s when: an expression of the static type `!dynamic` is assigned to variable declared as `Null` and, when `!dynamic` is used as a type argument for a `Null` type parameter. But such uses of `Null` are likely to be rare.
 
 <a name="part-misc"></a>
 # Part E: Miscellaneous, syntactic sugar and other conveniences
@@ -1326,7 +1326,7 @@ The “dual view” semantics proposed above ([E.1.1](#opt-func-param)) for opti
 
 In contexts were a function’s type might be used to determine if it is a subtype of another type, then optional parameters are treated as [NNBD](#part-nnbd "Non-Null By Default") (view [E.1.1](#opt-func-param)(b)). But as we explain next, whether optional parameter semantics are based on a “dual” ([E.1.1](#opt-func-param)) or “single” ([E.3.3](#opt-param-alt)) view, this will have no impact on subtype tests.
 
-Subtype tests of function types ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.5 “Function Types”) are structural, in that they depend on the types of parameters and return types ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 6, “Overview”). Nullity type operators have no bearing on function subtype tests. This is because the subtype relation over function types is defined in terms of the “assign to” (\(\Longleftrightarrow\)) relation over the parameter and/or return types. The “assign to” relation ([A.1.4](#def-subtype)), in turn, is unaffected by the nullity: if types *S* and *T* differ only in that one is an application of `?` over the other, then either *S* `<:` *T* or *T* `<:` *S* and hence *S* \(\Longleftrightarrow\) *T*. Similar arguments can be made for `!`.
+Subtype tests of function types ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.5 “Function Types”) are structural, in that they depend on the types of parameters and return types ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 6, “Overview”). Nullity type operators have no bearing on function subtype tests. This is because the subtype relation over function types is defined in terms of the “assign to” (⟺) relation over the parameter and/or return types. The “assign to” relation ([A.1.4](#def-subtype)), in turn, is unaffected by the nullity: if types *S* and *T* differ only in that one is an application of `?` over the other, then either *S* `<:` *T* or *T* `<:` *S* and hence *S* ⟺ *T*. Similar arguments can be made for `!`.
 
 <a name="part-libs"></a>
 # Part F: Impact on Dart SDK libraries
