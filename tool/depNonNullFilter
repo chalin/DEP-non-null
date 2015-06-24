@@ -76,6 +76,14 @@ function action(type, value, format, meta) {
             .replace(/\\DYNAMIC\b/g, 'dynamic')
             .replace(/\\ldots\b/g, '...')
             .replace(/\\le\b/g, '≤')
+            .replace(/\\subtype\b/g, '<:')
+            .replace(/\\qn\b/g, '?')
+            .replace(/\\land\b/g, '∧')
+            .replace(/\\lor\b/g, '∨')
+            .replace(/\\impliedby\b/g, '⟸') // ⇐
+            .replace(/\\inttype\b/g, 'int')
+            .replace(/\\true\b/g, 'true')
+            .replace(/\\false\b/g, 'false')
             .replace(/\\botObject\b/g, '⊥_Object') // x~subscript~
             .replace(/{}/g, '')
         ;

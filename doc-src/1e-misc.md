@@ -19,7 +19,10 @@ We adopt a *dual view* for the types of optional parameters as is explained next
 
 (a) **Within the scope of the function's body**, `p` will have static type:
 
-    - *T* if `p` is _explicitly_ declared non-null---i.e., *T* is !*U* for some *U*;
+    - *T* if `p`:
+        - is _explicitly_ declared non-null---i.e., *T* is !*U* for some *U*;
+        - has no meta type annotation, and has a non-null default value (see [E.1.1.1](#non-null-init));
+        - is a field parameter (see [E.1.1.2](#field-param)).
     - ?*T* otherwise. (Note that if *T* has type arguments, then the
       interpretation of the nullity of these type arguments is not affected.)
 
@@ -36,6 +39,24 @@ This helps enforce the following **guideline**: from a caller's perspective, an 
 > - *T*, the type of `p`, might implicitly be `dynamic` if no static type annotation is given ([D.2](#dynamic)). By the rules above, `p` has type `?dynamic`, i.e., `dynamic` ([D.2.1](#dynamic-and-type-operators)), in the context of the declaring function's body. Hence, a caveat is that we cannot declare `p` to have type `dynamic` in the function body scope and type `!dynamic` otherwise.
 > - The dual view presented here is an example of an application of [G0, utility](#g0-utility). This is further discussed, and an alternative is presented, in [E.3.3](#opt-param-alt).
 > - Also see [E.3.4](#function-subtype) for a discussion of function subtype tests.
+
+#### E.1.1.1 Optional parameters with non-null initializers are non-null {#non-null-init}
+
+In Dart, the initializer of an optional parameter must be a compile time constant ([DSS][] 9.2.2). Thus, in support of [G0, ease migration](#g0), an optional parameter with a non-null default value is considered non-null.
+
+#### E.1.1.2 Default field parameters are single view {#field-param}
+
+Dart field constructor parameters can also be optional, e.g.:
+
+```dart
+class C {
+  num n;
+  C([this.n]);
+  C.fromInt([int this.n]);
+}
+```
+
+While `this.n` may have a type annotation (as is illustrated for the named constructor `C.fromInt()`), the notion of dual view does not apply to optional field parameters since they do not introduce a new variable into the constructor body scope.
 
 ### E.1.2 Normalization of type expressions {#normalization}
 
@@ -161,3 +182,42 @@ The "dual view" semantics proposed above ([E.1.1](#opt-func-param)) for optional
 In contexts were a function's type might be used to determine if it is a subtype of another type, then optional parameters are treated as [NNBD][] (view [E.1.1](#opt-func-param)(b)). But as we explain next, whether optional parameter semantics are based on a "dual" ([E.1.1](#opt-func-param)) or "single" ([E.3.3](#opt-param-alt)) view, this will have no impact on subtype tests.
 
 Subtype tests of function types ([DSS][] 19.5 "Function Types") are structural, in that they depend on the types of parameters and return types ([DSS][] 6, "Overview"). Nullity type operators have no bearing on function subtype tests. This is because the subtype relation over function types is defined in terms of the "assign to" ($\Longleftrightarrow$) relation over the parameter and/or return types. The "assign to" relation ([A.1.4](#def-subtype)), in turn, is unaffected by the nullity: if types *S* and *T* differ only in that one is an application of `?` over the other, then either *S* `<:` *T* or *T* `<:` *S* and hence *S* $\Longleftrightarrow$ *T*. Similar arguments can be made for `!`.
+
+### E.3.5 Catch target types and meta type annotations {#catch-type-qualification}
+
+The following illustrates a try-catch statement:
+
+```dart
+class C<T> {}
+main() {
+  try {
+    ...
+  } on C<?num> catch (e) {
+    ...
+  }
+}
+```
+
+Given that `null` cannot be thrown ([DSS][] 16.9), it is meaningless to have a catch target type qualified with `?`; a [static warning][] results if `?` is used in this way. Any such qualification is ignored at runtime. Note that because meta type annotations are reified ([C.4](#semantics-of-generics)), they can be meaningfully applied to catch target type arguments as is illustrated above.
+
+### E.3.6 Reducing the annotation burden for local variables, an alternative {#local-var-analysis}
+
+As an alternative to the strict initialization rules for variables (including local variables) discussed in [E.3.2(a)](#local-var-alt), we propose as an alternative that standard read-before-write analysis be used for non-null _local variables_ without an explicit initializer, to determine if its default initial value of `null` has the potential of being read before the variable is initialized.
+
+Consider the following illustration of a common coding idiom:
+
+```dart
+int v; // local variable left uninitialized
+if (...) {
+  // possibly nested conditionals, each initializing v
+} else {
+  // possibly nested conditionals, each initializing v
+}
+// v is initialized to non-null by this point
+```
+
+Without the feature described in this subsection, `v` would need to be declared nullable.
+
+### E.3.7 Dart Style Guide on `Object` vs. `dynamic`{} {#style-guide-object}
+
+The [Dart Style Guide][] recommends [DO annotate with `Object` instead of `dynamic` to indicate any object is accepted][Dart Style Guide, Object vs dynamic]. Of course, this will need to be adapted to recommend use of `?Object` instead.

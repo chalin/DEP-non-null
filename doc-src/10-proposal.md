@@ -158,7 +158,7 @@ For ease of comprehension, this proposal has been divided into parts. Each part 
 
 Alternatives, as well as implications and limitations have been addressed throughout the proposal. [Appendix I](#appendix-1-review) is a review (survey) of nullity in programming languages: from languages without `null` to strategies for coping with `null`. It establishes a broad and partly historical context for this proposal and some of its presented alternatives.
 
-Once a "critical mass" of this proposal's features have gained approval, a fully updated version of the _Dart Language Specification_ will be produced. A prototype implementation is also planned.
+Once a "critical mass" of this proposal's features have gained approval, a fully updated version of the _Dart Language Specification_ will be produced. Tooling reengineering and a preliminary experience report can be found in [Appendix II](#appendix-tooling).
 
 ## 8 Executive summary
 
@@ -184,6 +184,8 @@ Once a "critical mass" of this proposal's features have gained approval, a fully
 - [B.2.6](#nnbd-function-sig). Syntax for nullable parameters declared using function signature syntax.
 - [B.3.1](#uti). Union type interoperability.
 - [B.3.3](#shared-type-op-semantics). Runtime representation of type operators and other shared semantics.
+- [B.3.5](#new-assignment-semantics). Adjusted semantics for "assignment compatible" ($\Longleftrightarrow$).
+- [B.3.6](#multi-members). Static semantics of members of ?T.
 - [D.2.1](#dynamic-and-type-operators). `!dynamic` is the unknown non-null type, and `?dynamic` is `dynamic`.
 - [D.2.2](#bang-dynamic-subtype-of). Defining `!dynamic <:` *S*.
 - [E.1.1](#opt-func-param). Optional parameters are nullable-by-default in function bodies only.
@@ -198,7 +200,7 @@ Other than the changes listed above, the semantics of [DartNNBD][] match [DartC]
 
 - [D.2](#dynamic). The role and semantics of `dynamic` are untouched. Thus, `dynamic` (and `?dynamic`) denote the "unknown type", supertype of all types. Also, e.g., in the absence of static type annotations or type arguments, `dynamic` is still assumed.
 
-### 8.3 Summary of alternatives and discussions
+### 8.3 Summary of alternatives and discussions {#alternatives}
 
 **Discussions / clarifications**:
 
@@ -207,6 +209,8 @@ Other than the changes listed above, the semantics of [DartNNBD][] match [DartC]
 - [D.3.1](#extends-bang-dynamic). Clarification of the semantics of `T extends !dynamic`.
 - [E.3.1](#nnbd-scope). Scope of [NNBD][] in [DartNNBD][].
 - [E.3.4](#function-subtype). Subtype relation over function types unaffected by nullity.
+- [E.3.5](#catch-type-qualification). Catch target types and meta type annotations.
+- [E.3.7](#style-guide-object). Dart Style Guide on `Object` vs. `dynamic`.
 
 **Points of variance / proposal part alternatives**:
 
@@ -226,6 +230,7 @@ Other than the changes listed above, the semantics of [DartNNBD][] match [DartC]
 - [D.3.3](#bang-dynamic-subtype-of-alt). Defining `!dynamic <:` *S*.
 - [E.3.2](#discussion-nnbd-scope). Scope of [NNBD][] in other languages or frameworks.
 - [E.3.3](#opt-param-alt). Optional parameters are always nullable-by-default.
+- [E.3.6](#local-var-analysis). Reducing the annotation burden for local variables.
 
 ### 8.4 Assessment of goals {#goal-assessment}
 

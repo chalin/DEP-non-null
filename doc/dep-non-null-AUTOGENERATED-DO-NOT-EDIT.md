@@ -1,6 +1,6 @@
 # Dart DEP for Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-06-05 (0.4.0)
+#### 2015-06-24 (0.5.0) - [revision history](#revision-history)
 
 -   [Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -16,7 +16,7 @@
     -   [8 Executive summary](#executive-summary)
         -   [8.1 Language updates and additions](#lang-changes)
         -   [8.2 What is unchanged?](#what-is-unchanged)
-        -   [8.3 Summary of alternatives and discussions](#summary-of-alternatives-and-discussions)
+        -   [8.3 Summary of alternatives and discussions](#alternatives)
         -   [8.4 Assessment of goals](#goal-assessment)
 -   [Part A: Recovering non-null types](#part-non-null-types)
     -   [A.1 Non-null types in](#a.1-non-null-types-in-dartc)[DartC](#terms "Classic (i.e., current) Dart")
@@ -47,6 +47,8 @@
         -   [B.3.2 Semantics of `!`](#semantics-of-bang)
         -   [B.3.3 Runtime representation of type operators and other shared semantics](#shared-type-op-semantics)
         -   [B.3.4 Default initialization of non-null variables is like](#var-init)[DartC](#terms "Classic (i.e., current) Dart")
+        -   [B.3.5 Adjusted semantics for “assignment compatible” (<span class="math"> ⇔ </span>)](#new-assignment-semantics)
+        -   [B.3.6 Static semantics of members of ?T](#multi-members)
     -   [B.4 Discussion](#b.4-discussion)
         -   [B.4.1 Precedent:](#ceylon-root)[Ceylon](http://ceylon-lang.org)’s root is `Object` | `Null`
         -   [B.4.2 Default initialization of non-null variables, alternative approaches](#var-init-alt)
@@ -90,6 +92,8 @@
 -   [Part E: Miscellaneous, syntactic sugar and other conveniences](#part-misc)
     -   [E.1 Feature details: miscellaneous](#e.1-feature-details-miscellaneous)
         -   [E.1.1 Optional parameters are nullable-by-default in function bodies only](#opt-func-param)
+            -   [E.1.1.1 Optional parameters with non-null initializers are non-null](#non-null-init)
+            -   [E.1.1.2 Default field parameters are single view](#field-param)
         -   [E.1.2 Normalization of type expressions](#normalization)
     -   [E.2 Feature details: syntactic sugar and other conveniences](#sugar)
         -   [E.2.1 Non-null `var`](#e.2.1-non-null-var)
@@ -105,6 +109,9 @@
             -   [Broad applicability of](#broad-applicability-of-nnbd-rule-for-dartnnbd)[NNBD](#part-nnbd "Non-Null By Default") rule for [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics")
         -   [E.3.3 Optional parameters are always nullable-by-default, an alternative](#opt-param-alt)
         -   [E.3.4 Subtype relation over function types unaffected by nullity](#function-subtype)
+        -   [E.3.5 Catch target types and meta type annotations](#catch-type-qualification)
+        -   [E.3.6 Reducing the annotation burden for local variables, an alternative](#local-var-analysis)
+        -   [E.3.7 Dart Style Guide on `Object` vs. `dynamic`](#style-guide-object)
 -   [Part F: Impact on Dart SDK libraries](#part-libs)
     -   [F.1 Examples](#f.1-examples)
         -   [F.1.1 `int.dart`](#int-nnbd)
@@ -117,6 +124,8 @@
         -   [F.2.2 `List<E>`](#f.2.2-liste)
             -   [`factory List<E>([int length])`](#factory-listeint-length)
             -   [`List<E>.length=`](#liste.length)
+    -   [F.3 Other classes](#f.3-other-classes)
+        -   [Object](#object)
 -   [Part G: Migration strategy (sketch)](#part-migration)
     -   [G.1 Precedent](#g.1-precedent)
     -   [G.2 Migration aids](#g.2-migration-aids)
@@ -133,6 +142,21 @@
             -   [(c) Non-null types](#c-non-null-types)
         -   [I.3.2 Language evolution](#language-evolution)
     -   [I.4 Modern web/mobile languages with non-null types and](#modern-lang-nnbd)[NNBD](#part-nnbd "Non-Null By Default")
+-   [Appendix II. Tooling and preliminary experience report](#appendix-tooling)
+    -   [II.1 Variant of proposal implemented in the Dart Analyzer](#proposal-variant)
+    -   [II.2 Dart Analyzer](#ii.2-dart-analyzer)
+        -   [II.2.1 Design outline](#ii.2.1-design-outline)
+            -   [(a) AST](#a-ast)
+            -   [(b) Element model](#b-element-model)
+            -   [(c) Resolution](#c-resolution)
+        -   [II.2.2 Source code and change footprint](#analyzer-code-changes)
+        -   [II.2.3 Status](#analyzer-status)
+    -   [II.3 Preliminary experience report](#experience-report)
+        -   [II.3.1 Nullity annotation density](#ii.3.1-nullity-annotation-density)
+        -   [II.3.2 Dart SDK library](#ii.3.2-dart-sdk-library)
+        -   [II.3.3 Sample projects](#ii.3.3-sample-projects)
+-   [Revision History](#revision-history)
+    -   [2016.02.24 (0.5.0)](#section)
 
 <a name="part-main"></a>
 # Non-null Types and Non-null By Default (NNBD)
@@ -295,7 +319,7 @@ For ease of comprehension, this proposal has been divided into parts. Each part 
 
 Alternatives, as well as implications and limitations have been addressed throughout the proposal. [Appendix I](#appendix-1-review) is a review (survey) of nullity in programming languages: from languages without `null` to strategies for coping with `null`. It establishes a broad and partly historical context for this proposal and some of its presented alternatives.
 
-Once a “critical mass” of this proposal’s features have gained approval, a fully updated version of the *Dart Language Specification* will be produced. A prototype implementation is also planned.
+Once a “critical mass” of this proposal’s features have gained approval, a fully updated version of the *Dart Language Specification* will be produced. Tooling reengineering and a preliminary experience report can be found in [Appendix II](#appendix-tooling).
 
 <a name="executive-summary"></a>
 ## 8 Executive summary
@@ -321,6 +345,8 @@ Once a “critical mass” of this proposal’s features have gained approval, a
 -   [B.2.6](#nnbd-function-sig). Syntax for nullable parameters declared using function signature syntax.
 -   [B.3.1](#uti). Union type interoperability.
 -   [B.3.3](#shared-type-op-semantics). Runtime representation of type operators and other shared semantics.
+-   [B.3.5](#new-assignment-semantics). Adjusted semantics for “assignment compatible” (⟺).
+-   [B.3.6](#multi-members). Static semantics of members of ?T.
 -   [D.2.1](#dynamic-and-type-operators). `!dynamic` is the unknown non-null type, and `?dynamic` is `dynamic`.
 -   [D.2.2](#bang-dynamic-subtype-of). Defining `!dynamic <:` *S*.
 -   [E.1.1](#opt-func-param). Optional parameters are nullable-by-default in function bodies only.
@@ -336,7 +362,7 @@ Other than the changes listed above, the semantics of [DartNNBD](#terms "Dart as
 
 -   [D.2](#dynamic). The role and semantics of `dynamic` are untouched. Thus, `dynamic` (and `?dynamic`) denote the “unknown type”, supertype of all types. Also, e.g., in the absence of static type annotations or type arguments, `dynamic` is still assumed.
 
-<a name="summary-of-alternatives-and-discussions"></a>
+<a name="alternatives"></a>
 ### 8.3 Summary of alternatives and discussions
 
 **Discussions / clarifications**:
@@ -346,6 +372,8 @@ Other than the changes listed above, the semantics of [DartNNBD](#terms "Dart as
 -   [D.3.1](#extends-bang-dynamic). Clarification of the semantics of `T extends !dynamic`.
 -   [E.3.1](#nnbd-scope). Scope of [NNBD](#part-nnbd "Non-Null By Default") in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics").
 -   [E.3.4](#function-subtype). Subtype relation over function types unaffected by nullity.
+-   [E.3.5](#catch-type-qualification). Catch target types and meta type annotations.
+-   [E.3.7](#style-guide-object). Dart Style Guide on `Object` vs. `dynamic`.
 
 **Points of variance / proposal part alternatives**:
 
@@ -365,6 +393,7 @@ Other than the changes listed above, the semantics of [DartNNBD](#terms "Dart as
 -   [D.3.3](#bang-dynamic-subtype-of-alt). Defining `!dynamic <:` *S*.
 -   [E.3.2](#discussion-nnbd-scope). Scope of [NNBD](#part-nnbd "Non-Null By Default") in other languages or frameworks.
 -   [E.3.3](#opt-param-alt). Optional parameters are always nullable-by-default.
+-   [E.3.6](#local-var-analysis). Reducing the annotation burden for local variables.
 
 <a name="goal-assessment"></a>
 ### 8.4 Assessment of goals
@@ -574,6 +603,7 @@ We define the internal class `_Anything` as the **new root** of the class hierar
 abstract class _Anything { const _Anything(); }
 
 abstract class _Basic extends _Anything {
+  bool operator ==(other) => identical(this, other);
   int get hashCode;
   String toString();
   dynamic noSuchMethod(Invocation invocation);
@@ -582,12 +612,11 @@ abstract class _Basic extends _Anything {
 
 class Object extends _Anything implements _Basic {
   const Object();
-  bool operator ==(other) => identical(this, other);
   ... // Methods of _Basic are all declared external
 }
 ```
 
-The definition of `Null` is the same as in [DartC](#terms "Classic (i.e., current) Dart") except that the class extends `_Anything` and implements `_Basic`. The semantic rules of equality ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.22 “Equality”), deal explicitly with cases where either operand is `null`. Thus `null` can never be a receiver nor an argument to the `==` operator, and so `==` is excluded from `_Basic`.
+The definition of `Null` is the same as in [DartC](#terms "Classic (i.e., current) Dart") except that the class extends `_Anything` and implements `_Basic`. The latter declares all members of [DartC](#terms "Classic (i.e., current) Dart")’s `Object`. Note that the declaration of equality allows a `null` operand (such a definition is needed, e.g., by the [Dart Analyzer](https://www.dartlang.org/tools/analyzer)).
 
 > Comment. Declaring `_Anything` as a class without methods allows us to provide a conventional definition for `void` as an empty interface, realized only by `Null`:
 >
@@ -740,6 +769,61 @@ Explicit initialization checks are extended to also address cases of implicit in
 >     -   No effect on production mode execution.
 > -   In the case of a local variable statically declared non-null but not explicitly initialized, a problem ([static warning](#terms "A problem reported by the static checker") or [dynamic type error](#terms "A type error reported in checked mode")) need only be reported if there is an attempt to use the local variable before it is explicitly assigned to.
 >
+ 
+
+<a name="new-assignment-semantics"></a>
+### B.3.5 Adjusted semantics for “assignment compatible” (⟺)
+
+Consider the following [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics") code:
+
+``` java
+?int i = 1; // ok
+class C1<T1 extends int> { T1 i1 = 1; } // ok
+class C2<T2 extends int> { ?T2 i2 = 1; } // should be ok
+```
+
+According to the [DartC](#terms "Classic (i.e., current) Dart") definition of [assignment compatible](#assignment-compatible) described in [A.1.4](#def-subtype), a [static warning](#terms "A problem reported by the static checker") should be reported for the initialization of `i2`. To understand why, let us examine the general case of
+
+``` java
+class C<T extends B> { T o = s; }
+```
+
+where `s` is some expression of type *S*. Let us write *T<sup>B</sup>* to represent that the type parameter *T* has upper bound *B*. The assignment to `o` is valid if *S* is [assignment compatible](#assignment-compatible) with *T*, i.e., *S ⟺ T<sup>B</sup>* (by definition of ⟺). But *T<sup>B</sup>* is incomparable when it is not instantiated. The best we can do is compare *S* to *B* and try to establish that *B \<: S*. Thus, *S ⟺ T<sup>B</sup>*
+
+*= S \<: T<sup>B</sup> ∨ T<sup>B</sup> \<: S* (by definition of ⟺) <br/>
+*⟸ S \<: T<sup>B</sup> ∨ T<sup>B</sup> \<: B ∧ B \<: S* <br/>
+*= S \<: T<sup>B</sup> ∨ B \<: S* (simplified because *B* is the upper bound of *T<sup>B</sup>*).
+
+where *⟸* is reverse implication. In the case of class `C2` above, the field `i2` is of type ?`T2`, hence we are dealing with the general case: *S ⟺ ?T<sup>B</sup>*
+
+*= S \<: ?T<sup>B</sup> ∨ ?T<sup>B</sup> \<: S* (by definition of ⟺) <br/>
+*= S \<: Null ∨ S \<: T<sup>B</sup> ∨ ?T<sup>B</sup> \<: S* (property of ?) <br/>
+*= S \<: Null ∨ S \<: T<sup>B</sup> ∨ (Null \<: S ∧ T<sup>B</sup> \<: S)* (property of ?) <br/>
+*⟸ S \<: Null ∨ S \<: T<sup>B</sup> ∨ (Null \<: S ∧ T<sup>B</sup> \<: B ∧ B \<: S)* <br/>
+*= S \<: Null ∨ S \<: T<sup>B</sup> ∨ (Null \<: S ∧ B \<: S)*. (\*)
+
+If we substitute the type of `i2` and the bound of `T2` for *S* and *B* in (\*) and we get:
+
+*int \<: Null ∨ int \<: T<sup>int</sup> ∨ (Null \<: int ∧ int \<: int)* <br/>
+*= false ∨ int \<: T<sup>int</sup> ∨ (false ∧ true)* <br/>
+*= int \<: T<sup>int</sup> ∨ false* <br/>
+*= false*.
+
+This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible](#assignment-compatible) is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.4):
+
+> An interface type *T* may be assigned to a type *S*, written *T ⟺ S*, iff either *T \<: S* or *S \<: T*. *This rule may surprise readers accustomed to conventional typechecking. The intent of the ⟺ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work.*
+
+In the spirit of the commentary, we redefine “[assignment compatible](#assignment-compatible)” as follows: if *T* and *S* are non-null types, then the definition is as in [DartC](#terms "Classic (i.e., current) Dart"). Otherwise, suppose *T* is the nullable union type *?U*, then *?U* and *S* are assignment compatible iff *S* is assignment compatible with `Null` *or* with *U*. I.e., *?U ⟺ S* iff
+
+*Null ⟺ S ∨ U ⟺ S*.
+
+If we expand this new definition, we end up with the formula (\*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible](#assignment-compatible), `i2` can be initialized with an `int` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics").
+
+<a name="multi-members"></a>
+### B.3.6 Static semantics of members of ?T
+
+We define the static semantics of the members of ?*T* as if it were an anonymous class with `Null` and *T* as superinterfaces. Then the rules of member inheritance and type overrides as defined in ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 11.1.1) apply.
+
 <a name="b.4-discussion"></a>
 ## B.4 Discussion
 
@@ -1176,7 +1260,10 @@ We adopt a *dual view* for the types of optional parameters as is explained next
 
 1.  **Within the scope of the function’s body**, `p` will have static type:
 
-    -   *T* if `p` is *explicitly* declared non-null—i.e., *T* is !*U* for some *U*;
+    -   *T* if `p`:
+        -   is *explicitly* declared non-null—i.e., *T* is !*U* for some *U*;
+        -   has no meta type annotation, and has a non-null default value (see [E.1.1.1](#non-null-init));
+        -   is a field parameter (see [E.1.1.2](#field-param)).
     -   ?*T* otherwise. (Note that if *T* has type arguments, then the interpretation of the nullity of these type arguments is not affected.)
 
 2.  **In any other context**, the type of `p` is *T*.
@@ -1191,6 +1278,26 @@ We adopt a *dual view* for the types of optional parameters as is explained next
 > -   *T*, the type of `p`, might implicitly be `dynamic` if no static type annotation is given ([D.2](#dynamic)). By the rules above, `p` has type `?dynamic`, i.e., `dynamic` ([D.2.1](#dynamic-and-type-operators)), in the context of the declaring function’s body. Hence, a caveat is that we cannot declare `p` to have type `dynamic` in the function body scope and type `!dynamic` otherwise.
 > -   The dual view presented here is an example of an application of [G0, utility](#g0-utility). This is further discussed, and an alternative is presented, in [E.3.3](#opt-param-alt).
 > -   Also see [E.3.4](#function-subtype) for a discussion of function subtype tests.
+
+<a name="non-null-init"></a>
+#### E.1.1.1 Optional parameters with non-null initializers are non-null
+
+In Dart, the initializer of an optional parameter must be a compile time constant ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 9.2.2). Thus, in support of [G0, ease migration](#g0), an optional parameter with a non-null default value is considered non-null.
+
+<a name="field-param"></a>
+#### E.1.1.2 Default field parameters are single view
+
+Dart field constructor parameters can also be optional, e.g.:
+
+``` java
+class C {
+  num n;
+  C([this.n]);
+  C.fromInt([int this.n]);
+}
+```
+
+While `this.n` may have a type annotation (as is illustrated for the named constructor `C.fromInt()`), the notion of dual view does not apply to optional field parameters since they do not introduce a new variable into the constructor body scope.
 
 <a name="normalization"></a>
 ### E.1.2 Normalization of type expressions
@@ -1328,6 +1435,48 @@ In contexts were a function’s type might be used to determine if it is a subty
 
 Subtype tests of function types ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.5 “Function Types”) are structural, in that they depend on the types of parameters and return types ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 6, “Overview”). Nullity type operators have no bearing on function subtype tests. This is because the subtype relation over function types is defined in terms of the “assign to” (⟺) relation over the parameter and/or return types. The “assign to” relation ([A.1.4](#def-subtype)), in turn, is unaffected by the nullity: if types *S* and *T* differ only in that one is an application of `?` over the other, then either *S* `<:` *T* or *T* `<:` *S* and hence *S* ⟺ *T*. Similar arguments can be made for `!`.
 
+<a name="catch-type-qualification"></a>
+### E.3.5 Catch target types and meta type annotations
+
+The following illustrates a try-catch statement:
+
+``` java
+class C<T> {}
+main() {
+  try {
+    ...
+  } on C<?num> catch (e) {
+    ...
+  }
+}
+```
+
+Given that `null` cannot be thrown ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 16.9), it is meaningless to have a catch target type qualified with `?`; a [static warning](#terms "A problem reported by the static checker") results if `?` is used in this way. Any such qualification is ignored at runtime. Note that because meta type annotations are reified ([C.4](#semantics-of-generics)), they can be meaningfully applied to catch target type arguments as is illustrated above.
+
+<a name="local-var-analysis"></a>
+### E.3.6 Reducing the annotation burden for local variables, an alternative
+
+As an alternative to the strict initialization rules for variables (including local variables) discussed in [E.3.2(a)](#local-var-alt), we propose as an alternative that standard read-before-write analysis be used for non-null *local variables* without an explicit initializer, to determine if its default initial value of `null` has the potential of being read before the variable is initialized.
+
+Consider the following illustration of a common coding idiom:
+
+``` java
+int v; // local variable left uninitialized
+if (...) {
+  // possibly nested conditionals, each initializing v
+} else {
+  // possibly nested conditionals, each initializing v
+}
+// v is initialized to non-null by this point
+```
+
+Without the feature described in this subsection, `v` would need to be declared nullable.
+
+<a name="style-guide-object"></a>
+### E.3.7 Dart Style Guide on `Object` vs. `dynamic`
+
+The [Dart Style Guide](https://www.dartlang.org/articles/style-guide) recommends [DO annotate with `Object` instead of `dynamic` to indicate any object is accepted](https://www.dartlang.org/articles/style-guide/#do-annotate-with-object-instead-of-dynamic-to-indicate-any-object-is-accepted). Of course, this will need to be adapted to recommend use of `?Object` instead.
+
 <a name="part-libs"></a>
 # Part F: Impact on Dart SDK libraries
 
@@ -1349,7 +1498,7 @@ abstract class int extends num {
   external const factory ?int.fromEnvironment(String name, {int defaultValue});
   int operator &(int other);
   int operator |(int other);
-  int operator ^(int other);
+  int operator <sup>(</sup>int other);
   int operator ~();
   int operator <<(int shiftAmount);
   int operator >>(int shiftAmount);
@@ -1519,6 +1668,25 @@ Alternatives to growing a list of non-null elements includes:
     -   Reuse the filler provided, say, as argument to `List<E>.filled(int length, E fill)`.
 -   Add a new mutator, `setLength(int newLength, E filler)`.
 
+<a name="f.3-other-classes"></a>
+## F.3 Other classes
+
+<a name="object"></a>
+### Object
+
+The `Object` class requires no textual modifications:
+
+``` java
+class Object {
+  const Object();
+  bool operator ==(other) => identical(this, other);
+  external int get hashCode;
+  external String toString();
+  external dynamic noSuchMethod(Invocation invocation);
+  external Type get runtimeType;
+}
+```
+
 <a name="part-migration"></a>
 # Part G: Migration strategy (sketch)
 
@@ -1534,7 +1702,15 @@ As is mentioned in the survey ([I.3](#retrofit)), both commercial and research l
 
 It is interesting to note that [Eiffel](https://www.eiffel.com) introduced the `!` meta type annotation solely for purpose of code migration. [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics") also has `!` at its disposal, though in our case it is a core feature.
 
-We propose (as has been done in [JML](#JML "Java Modeling Language") and the [Eclipse JDT](https://eclipse.org/jdt)) that the following lexically scoped, non-inherited library and class level annotations be made available: `@NullableByDefault` and `@NonNullByDefault`. Such annotations establish the default nullity in the scope of the entity thus annotated.
+We propose (as has been done in [JML](#JML "Java Modeling Language") and the [Eclipse JDT](https://eclipse.org/jdt)) that the following lexically scoped, non-inherited library, part and class level annotations be made available: `@nullable_by_default` and `@non_null_by_default`. Such annotations establish the default nullity in the scope of the entity thus annotated.
+
+Within the scope of an `@nullable_by_default` annotation, every type name *T* is taken as implicitly ?*T* except for the following: a type name that names
+
+-   a constructor in a constructor declaration
+-   a type target to a catch clause
+-   the argument type of a type test (`is` expression)
+
+Despite the exclusions above, if any such type name has type arguments then the nullable-by-default rule applies to the type arguments.
 
 <a name="g.3-impact"></a>
 ## G.3 Impact
@@ -1555,10 +1731,10 @@ It seems desirable to target Dart 2.0 as a first release under which [NNBD](#par
 
 Here is a preliminary list of possible steps along this migration path, not necessarily in this order:
 
--   (SDK) Create `@NullableByDefault` and `@NonNullByDefault` annotations.
+-   (SDK) Create `@nullable_by_default` and `@non_null_by_default` annotations.
 -   (Tooling) Add support for:
     -   Meta type annotation *syntax* (excluding most sugars).
-    -   Static checks. This includes processing of `@*ByDefault` annotations.
+    -   Static checks. This includes processing of `@*_by_default` annotations.
     -   Runtime support ([B.3.3](#shared-type-op-semantics)) for nullity type operators, and dynamic checks.
 -   (SDK) Re-root the class hierarchy ([B.2.1](#new-root)).
 -   (Tooling) Global option to turn on [NNBD](#part-nnbd "Non-Null By Default").
@@ -1720,3 +1896,210 @@ For sake of completeness, we also reproduce here (from [2.2](#precedent)) the li
 | [Swift](https://developer.apple.com/swift/) (Apple) | iOS/OS X Objective-C successor                                                                                                                                               | 2014Q4 | [option type](http://en.wikipedia.org/wiki/Option_type) | [Swift optional type](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/TheBasics.html#//apple_ref/doc/uid/TP40014097-CH5-ID330) |
 
 As was mentioned earlier, there is also [discussion](#precedent) of introducing non-null types to [TypeScript](http://www.typescriptlang.org).
+
+<a name="appendix-tooling"></a>
+# Appendix II. Tooling and preliminary experience report
+
+<a name="proposal-variant"></a>
+## II.1 Variant of proposal implemented in the Dart Analyzer
+
+We describe here a *version* of this proposal as implemented in the [Dart Analyzer](https://www.dartlang.org/tools/analyzer). It is “a version” in that we have adopted all core ideas ([8.1](#lang-changes)) but we have made a particular choice of alternatives ([8.3](#alternatives)). Choices have been driven by the need to create a solution that is **fully backwards compatible**, as will be explained below.
+
+Core language design decisions (cf. [8.1](#lang-changes)) and main alternatives:
+
+-   [A.2](#non-null-types). Drop semantic rules giving special treatment to `null`.
+-   [B.2](#nnbd). Ensure `Object` is non-null by making `Null` a root ([B.4.7](#object-not-nullable-alt)).
+-   [B.2](#nnbd). Support meta type annotations
+    -   `@nullable` and `@non_null` ([B.4.6](#type-anno-alt)), and in those places where [DartC](#terms "Classic (i.e., current) Dart") does not currently support metadata,
+    -   allow the use of specialized comments `/*?*/` and `/*!*/`.
+-   [C.3](#generics). Support for generics matches the proposal.
+-   [G.2](#g-2-migration-aids). Support `library`, `part` and `class` level `@nullable_by_default` annotations.
+
+By our choice of input syntax, [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics") annotated code can be **analyzed and executed in DartC** without any impact on DartC tooling.
+
+<a name="ii.2-dart-analyzer"></a>
+## II.2 Dart Analyzer
+
+We describe here a realization of this proposal in the [Dart Analyzer](https://www.dartlang.org/tools/analyzer).
+
+<a name="ii.2.1-design-outline"></a>
+### II.2.1 Design outline
+
+The dart analyzer processes compilation units within a collection of libraries. The processing of each library is done in multiple phases on the Abstract Syntax Tree (AST) provided by the parser.
+
+<a name="a-ast"></a>
+#### (a) AST
+
+No structural changes have been done to the AST types since nullity annotations are represented by metadata and comments. Also, `NullityElement`s, described next, are attached to `TypeName`s via the generic AST property mechanism (a hash map associated with any AST node).
+
+<a name="b-element-model"></a>
+#### (b) Element model
+
+-   We introduce two `DartType` subtypes, one for each of `?` and `!` meta type annotations, named `UnionWithNullType` and `NonNullType`, respectively. These represent normalized types ([E.1.2](#normalization)).
+-   The model `Element` representing a `UnionWithNullType` is `UnionWithNullElement`. Its is a representation of a (synthetic) `ClassElement`-like entity that can be queried for members via methods like `lookUpMethod(methodName)`, etc. When queried for a member with a given name *n*, a (synthetic) multi-member is returned which represents the collection of members matching declarations of *n* in `Null` and/or the other type argument of `UnionWithNullType`.
+-   The dual-view for optional function parameters ([E.1.1](#opt-func-param)) is realized by associating to each optional parameter (`DefaultParameterElementImpl`) a synthetic counterpart (`DefaultParameterElementWithCalleeViewImpl`) representing the declared parameter from the function-body/callee view ([E.1.1(a)](#opt-func-param)). All identifier occurrences within the function body scope have the callee-view parameter instance as an associated static element.
+
+<a name="c-resolution"></a>
+#### (c) Resolution
+
+We describe here the *added* / *adapted* analyzer processing (sub-)phases:
+
+1.  Nullity annotation processing:
+
+    1.  Nullity annotation resolution (earlier than would normally be done since nullity annotations impact *types* in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics")). Note that we currently match annotation names only, regardless of library of origin so as to facilitate experimentation.
+    2.  `NullityElement`s (see (b) below) are computed in a top-down manner, and attached to the AST nodes that they decorate (e.g., `TypeName`, `LibraryDirective`, etc.). The final nullity of a type name depends on: global defaults (whether [NNBD](#part-nnbd "Non-Null By Default") is enabled or not), `@nullable_by_default` nullity scope annotations, and individual declarator annotations.
+
+2.  Element resolution (via `ElementResolver`) is enhanced to:
+
+    1.  Adjust the static type associated with a, e.g., a `TypeName` based on its nullities.
+    2.  Handle problem reporting for operator and method (including getter and setter) invocation over nullable targets.
+
+3.  A late phase (after types have been resolved and compile-time constants computed) is used to adjust, if necessary, the types of optional parameters based on their default values ([E.1.1.1](#non-null-init)).
+
+4.  Error verification has been adapted to, e.g., check for invalid implicit initialization of variables with `null` ([B.3.4](#var-init)); with the exclusion of final fields (whose initialization is checked separately).
+
+The [NNBD](#part-nnbd "Non-Null By Default") analyzer also builds upon existing [DartC](#terms "Classic (i.e., current) Dart") flow analysis and type propagation facilities so that an expression *e* is of type ?*T* can have its type promoted in `if` statements and conditional expressions as follows:
+
+| Condition   | True context  | False context |
+|-------------|---------------|---------------|
+| *e* == null | *e* is `Null` | *e* is *T*    |
+| *e* != null | *e* is *T*    | *e* is `Null` |
+| *e* is *T*  | *e* is *T*    | -             |
+| *e* is! *T* | -             | *e* is *T*    |
+
+> Caveat excerpt from a code comment: TODO(scheglov) type propagation for instance/top-level fields was disabled because it depends on the order or visiting. If both field and its client are in the same unit, and we visit the client before the field, then propagated type is not set yet.
+
+<a name="analyzer-code-changes"></a>
+### II.2.2 Source code and change footprint
+
+The [NNBD](#part-nnbd "Non-Null By Default")-enabled analyzer sources are in the author’s GitHub Dart SDK fork @[chalin/sdk, dep30 branch](https://github.com/chalin/sdk/tree/dep30), under `pkg/analyzer`. This SDK fork also contains updates to the SDK library and sample projects which have been subject to nullity analysis (as documented in [II.3](#experience-report)). Note that
+
+-   All code changes are marked with comments containing the token `DEP30` to facilitate identification (and merging of upstream changes from @[dart-lang/sdk](https://github.com/dart-lang/sdk/)).
+-   Most significant code changes are marked with appropriate references to sections of this proposal for easier feature implementation tracking.
+
+As of the time of writing, the [Dart Analyzer](https://www.dartlang.org/tools/analyzer) code change footprint (presented as a git diff summary) is:
+
+    Showing  8 changed files  with 236 additions and 34 deletions.
+    +3   −2  pkg/analyzer/lib/src/generated/ast.dart
+    +5   −3  pkg/analyzer/lib/src/generated/constant.dart
+    +39  −5  pkg/analyzer/lib/src/generated/element.dart
+    +54  −9  pkg/analyzer/lib/src/generated/element_resolver.dart
+    +17  −1  pkg/analyzer/lib/src/generated/engine.dart
+    +24  −6  pkg/analyzer/lib/src/generated/error_verifier.dart
+    +90  −7  pkg/analyzer/lib/src/generated/resolver.dart
+    +4   −1  pkg/analyzer/lib/src/generated/static_type_analyzer.dart
+
+There is approximately 1K [Source Lines Of Code (SLOC)](http://www.dwheeler.com/sloccount) of new code (or 3K LOC including comments and whitespace).
+
+<a name="analyzer-status"></a>
+### II.2.3 Status
+
+The variant of the proposal described in [II.1](#proposal-variant) has been implemented except for the following features which are planed, but not yet supported:
+
+-   [B.2.5](#factory-constructors). Syntax for nullable factory constructors.
+-   [D.2.1](#dynamic-and-type-operators). `!dynamic`. (partially supported)
+-   [D.2.2](#bang-dynamic-subtype-of). Defining `!dynamic <:` *S*. (partially supported)
+-   [E.3.6](#local-var-analysis). Reducing the annotation burden for local variables.
+
+Also, issues with flow analysis and function literal types are currently being addressed.
+
+Caveat: being a *prototype* with experimental input syntax via annotations and comments, there is currently no checking of the validity of annotations (e.g., duplicate or misplaced annotations).
+
+To run the [NNBD](#part-nnbd "Non-Null By Default") analyzer from the command line one can use the author’s [analyzer\_cli fork (non-null branch)](https://github.com/chalin/analyzer_cli/tree/non-null) with the `--enable-non-null` option *and* by setting the environment variable `DEP_NNBD` to 1 (this latter requirement will be lifted at some point). Leaving `DEP_NNBD` undefined causes [NNBD](#part-nnbd "Non-Null By Default") code changes to be eliminated (at compile time) and hence the analyzer behaves as it would in [DartC](#terms "Classic (i.e., current) Dart").
+
+<a name="experience-report"></a>
+## II.3 Preliminary experience report
+
+We stress from the outset that this is a **preliminary** report.
+
+Our initial objective has been to test run the new analyzer on sample projects. Our first target has been the SDK library Dart sources. We have also used some sample projects found in the Dart SDK `pkg` directory. So far, results are encouraging in that the nullable annotation burden seems to be low as we quantify in detail below.
+
+<a name="ii.3.1-nullity-annotation-density"></a>
+### II.3.1 Nullity annotation density
+
+[Dietl, 2014](http://cs.au.dk/~amoeller/tapas2014/dietl.pdf), reports 20 nullity annotations / KLOC (anno/KLOC). So far, nullable annotation density for the SDK sources have been:
+
+-   0.1 anno/KLOC for the library (with \<1 line/KLOC of general changes related to nullity);
+-   1 anno/KLOC for the samples.
+
+We attribute such a low annotation count to Dart’s relaxed definition of assignability (see [A.1.4](#assignment-compatible) and [B.3.5](#new-assignment-semantics)), and a judicious choice in the scope of [NNBD](#part-nnbd "Non-Null By Default") ([E.3.1](#nnbd-scope)), in particular for optional parameters—namely our dual-view approach and use of compile-time default values to influence the nullability ([E.1.1](#opt-func-param)).
+
+We are not claiming that such a low annotation count will be typical (it certainly is not the case for the analyzer code itself, in part due to most AST fields being nullable), but results are encouraging.
+
+<a name="ii.3.2-dart-sdk-library"></a>
+### II.3.2 Dart SDK library
+
+Our strategy has been to run the [NNBD](#part-nnbd "Non-Null By Default") analyzer over the SDK library and address any reported issues. In addition, we added the nullable annotations mentioned in [Part F](#part-libs). Here is a summary, to date, of the changes.
+
+-   `sdk/lib/core/core.dart` updated to include the definition of nullity annotations `@nullable`, `@non_null`, etc. (19 lines).
+
+-   Only 6 nullable annotations have been required, such as the following from `lib/core/errors.dart`:
+
+    ``` java
+    static int checkValidRange(int start, /*?*/int end, int length, ...)
+    ```
+
+-   Several of the generic collection class methods have been updated, replacing `Object` parameter types (since `Object` is non-null under [NNBD](#part-nnbd "Non-Null By Default")) with an appropriate generic type parameter (63 such changes); e.g., from `lib/core/set.dart`:
+
+    ``` java
+    bool contains(E value); //DEP30, was: Object value
+    ```
+
+    Although use of `Object` rather than `E` is [necessary in Java](http://stackoverflow.com/questions/104799/why-arent-java-collections-remove-methods-generic), we don’t believe that such a use is necessary in Dart. Hence, in our opinion, these signature changes are actually orthogonal to [NNBD](#part-nnbd "Non-Null By Default"), although the [NNBD](#part-nnbd "Non-Null By Default") analyzer made the issues evident.
+
+-   The remaining updates (10 lines) were necessary to overcome the limitations in the analyzer’s flow analysis capabilities. For example, when an optional nullable parameter is initialized to a non-null value when it is null at the point of call. This is a typical code change of this nature:
+
+        *** 280,287 ****
+            static void checkValidIndex(int index, var indexable,
+        !                               [String name, int length, String message]) {
+        !     if (length == null) length = indexable.length;
+              // Comparing with `0` as receiver produces better dart2js type inference.
+        --- 280,287 ----
+             * otherwise the length is found as `indexable.length`.
+             */
+            static void checkValidIndex(int index, var indexable,
+        !                               [String name, int _length, String message]) { //DEP30: renamed to _length
+        !     int length = _length == null ? indexable.length : _length;              //DEP30: assign non-const default value
+              // Comparing with `0` as receiver produces better dart2js type inference.
+              if (0 > index || index >= length) {
+                if (name == null) name = "index";
+
+-   There remain two false positives related to limitations in the analyzer’s flow analysis.
+
+<a name="ii.3.3-sample-projects"></a>
+### II.3.3 Sample projects
+
+As a sanity test we have run the [NNBD](#part-nnbd "Non-Null By Default") analyzer on itself. As expected, a large number of problems are reported, due the nullable nature of AST class type fields. We have chosen not to tackle the annotation of the analyzer code itself at the moment.
+
+As for other projects, to date, we have run the [NNBD](#part-nnbd "Non-Null By Default") analyzer over the following SDK `pkg` projects totaling 2K LOC:
+
+-   `expect`
+-   `fixnum`
+
+Each projects required only a single nullity annotation. The remaining changes to `expect` were to remove redundant (in [DartC](#terms "Classic (i.e., current) Dart")) explicit initialization of the optional `String reason` parameter with `null` (16 lines).
+
+<a name="revision-history"></a>
+# Revision History
+
+Major updates are documented here.
+
+<a name="section"></a>
+## 2016.02.24 (0.5.0)
+
+The main change is the addition of [Appendix II. Tooling and preliminary experience report](#appendix-tooling). In terms of individuals section changes we have:
+
+**New**
+
+-   [B.3.5](#new-assignment-semantics). Adjusted semantics for “assignment compatible” (⟺).
+-   [B.3.6](#multi-members). Static semantics of members of ?T.
+-   [E.1.1.1](#non-null-init). Optional parameters with non-null initializers are non-null.
+-   [E.1.1.2](#field-param). Default field parameters are single view.
+-   [E.3.5](#catch-type-qualification). Catch target types and meta type annotations.
+-   [E.3.6](#local-var-analysis). Reducing the annotation burden for local variables, an alternative.
+-   [E.3.7](#style-guide-object). Dart Style Guide on `Object` vs. `dynamic`.
+
+**Updated**
+
+-   [B.2.1](#new-root). Ensuring `Object` is non-null: elect `_Anything` as a new root. Updated `_Basic` declaration and associated prose since the analyzer expects the `==` operator to be defined for `Null`.
+-   [E.1.1](#opt-func-param). Optional parameters are nullable-by-default in function bodies only. Now makes reference to cases [E.1.1.1](#non-null-init) and [E.1.1.2](#field-param).
+-   [G.2](#g-2-migration-aids). Adjusted name of nullity-scope annotations. Clarified the extent of the scope of `@nullable_by_default`, and that such annotations can also be applied to `part`s.

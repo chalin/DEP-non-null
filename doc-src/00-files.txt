@@ -11,5 +11,7 @@
 1g-migration.md
 # Appendices
 x1-review.md
+x2-tooling.md
+xx-history.md
 # References
 zz-references.md

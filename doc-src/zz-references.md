@@ -23,6 +23,7 @@
 [DDC issue #64]: https://github.com/dart-lang/dev_compiler/issues/64
 [DEP 2015/03/18]: https://github.com/dart-lang/dart_enhancement_proposals/blob/master/Meetings/2015-03-18%20DEP%20Committee%20Meeting.md#more-proposals
 [DEP-generic-functions]: https://github.com/leafpetersen/dep-generic-methods
+[DEP-metadata-for-type-annotations]: https://github.com/chalin/DEP-metadata-for-type-annotations
 [DEP-non-null]: https://github.com/chalin/DEP-non-null
 [DEP]: https://github.com/dart-lang/dart_enhancement_proposals
 [DSC 2015/01]: http://news.dartlang.org/2015/01/dart-language-evolution-discussed-in.html
@@ -37,6 +38,9 @@
 [Dart List set length API]: https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart:core.List#id_length=
 [Dart Optional Types, overview]: https://www.dartlang.org/articles/optional-types/#overview
 [Dart Optional Types]: https://www.dartlang.org/articles/optional-types
+[Dart SDK Analyzer project]: https://github.com/dart-lang/sdk/tree/master/pkg/analyzer
+[Dart SDK project]: https://github.com/dart-lang/sdk/
+[Dart Style Guide, Object vs dynamic]: https://www.dartlang.org/articles/style-guide/#do-annotate-with-object-instead-of-dynamic-to-indicate-any-object-is-accepted
 [Dart Style Guide, var]: https://www.dartlang.org/articles/style-guide/#prefer-using-var-without-a-type-annotation-for-local-variables
 [Dart Style Guide]: https://www.dartlang.org/articles/style-guide
 [Dart VM]: https://www.dartlang.org/tools/dart-vm
@@ -104,6 +108,7 @@
 [Pony]: http://www.ponylang.org
 [ROI]: #ROI "Return On Investment"
 [Rust]: http://www.rust-lang.org
+[SO104799]: http://stackoverflow.com/questions/104799/why-arent-java-collections-remove-methods-generic
 [Spark Ada]: http://www.spark-2014.org
 [Spec#]: http://research.microsoft.com/en-us/projects/specsharp
 [Splint]: http://www.splint.org
@@ -119,6 +124,9 @@
 [TypeScript]: http://www.typescriptlang.org
 [Use Java 8 Optional]: http://www.oracle.com/technetwork/articles/java/java8-optional-2175753.html
 [assignment compatible]: #assignment-compatible
+[chalin/analyzer_cli]: https://github.com/chalin/analyzer_cli/tree/non-null
+[chalin/sdk, dep30 branch]: https://github.com/chalin/sdk/tree/dep30
+[chalin/sdk]: https://github.com/chalin/sdk
 [chalin]: https://github.com/chalin
 [dart/runtime/lib/integers_patch.dart#L48]: https://github.com/dart-lang/sdk/blob/master/runtime/lib/integers_patch.dart#L48
 [dart2js]: https://www.dartlang.org/tools/dart2js

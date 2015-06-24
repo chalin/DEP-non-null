@@ -180,3 +180,20 @@ Alternatives to growing a list of non-null elements includes:
     - Reuse the filler provided, say, as argument to `List<E>.filled(int length, E fill)`.
 
 - Add a new mutator, `setLength(int newLength, E filler)`.
+
+## F.3 Other classes
+
+### Object
+
+The `Object` class requires no textual modifications:
+
+```dart
+class Object {
+  const Object();
+  bool operator ==(other) => identical(this, other);
+  external int get hashCode;
+  external String toString();
+  external dynamic noSuchMethod(Invocation invocation);
+  external Type get runtimeType;
+}
+```

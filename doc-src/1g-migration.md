@@ -10,7 +10,15 @@ As is mentioned in the survey ([I.3](#retrofit)), both commercial and research l
 
 It is interesting to note that [Eiffel][] introduced the `!` meta type annotation solely for purpose of code migration. [DartNNBD][] also has `!` at its disposal, though in our case it is a core feature.
 
-We propose (as has been done in [JML][] and the [Eclipse JDT][]) that the following lexically scoped, non-inherited library and class level annotations be made available: `@NullableByDefault` and `@NonNullByDefault`. Such annotations establish the default nullity in the scope of the entity thus annotated.
+We propose (as has been done in [JML][] and the [Eclipse JDT][]) that the following lexically scoped, non-inherited library, part and class level annotations be made available: `@nullable_by_default` and `@non_null_by_default`. Such annotations establish the default nullity in the scope of the entity thus annotated.
+
+Within the scope of an `@nullable_by_default` annotation, every type name *T* is taken as implicitly ?*T* except for the following: a type name that names
+
+- a constructor in a constructor declaration
+- a type target to a catch clause
+- the argument type of a type test (`is` expression)
+
+Despite the exclusions above, if any such type name has type arguments then the nullable-by-default rule applies to the type arguments.
 
 ## G.3 Impact
 
@@ -29,10 +37,10 @@ It seems desirable to target Dart 2.0 as a first release under which [NNBD][] wo
 
 Here is a preliminary list of possible steps along this migration path, not necessarily in this order:
 
-- (SDK) Create `@NullableByDefault` and `@NonNullByDefault` annotations.
+- (SDK) Create `@nullable_by_default` and `@non_null_by_default` annotations.
 - (Tooling) Add support for:
     - Meta type annotation _syntax_ (excluding most sugars).
-    - Static checks. This includes processing of `@*ByDefault` annotations.
+    - Static checks. This includes processing of `@*_by_default` annotations.
     - Runtime support ([B.3.3](#shared-type-op-semantics)) for nullity type operators, and dynamic checks.
 - (SDK) Re-root the class hierarchy ([B.2.1](#new-root)).
 - (Tooling) Global option to turn on [NNBD][].

@@ -1,0 +1,54 @@
+# Generated 2015.06.24 (start of day)
+
+Showing  46 changed files  with 4,284 additions and 132 deletions.
++3  −2   pkg/analyzer/lib/src/generated/ast.dart
++5  −3   pkg/analyzer/lib/src/generated/constant.dart
++39 −5   pkg/analyzer/lib/src/generated/element.dart
++54 −9   pkg/analyzer/lib/src/generated/element_resolver.dart
++17 −1   pkg/analyzer/lib/src/generated/engine.dart
++24 −6   pkg/analyzer/lib/src/generated/error_verifier.dart
++90 −7   pkg/analyzer/lib/src/generated/resolver.dart
++4  −1   pkg/analyzer/lib/src/generated/static_type_analyzer.dart
+
++54 −1   pkg/analyzer/lib/src/generated/testing/test_type_provider.dart
+
++11  −0  pkg/analyzer/lib/src/nullity/ast_part.dart
++264 −0  pkg/analyzer/lib/src/nullity/element_core_part.dart
++28  −0  pkg/analyzer/lib/src/nullity/element_general_part.dart
++136 −0  pkg/analyzer/lib/src/nullity/element_nullity_part.dart
++132 −0  pkg/analyzer/lib/src/nullity/element_resolver_part.dart
++399 −0  pkg/analyzer/lib/src/nullity/element_type_part.dart
++386 −0  pkg/analyzer/lib/src/nullity/resolver_part.dart
+
++51  −0   pkg/analyzer/test/generated/Makefile
++2,445 −0 pkg/analyzer/test/generated/nullity_test.dart
++24  −0   pkg/analyzer/test/generated/resolver_test.dart
+
++17 −17  pkg/expect/lib/expect.dart
++1  −1   pkg/fixnum/lib/src/int64.dart
+
++2  −2   sdk/lib/collection/hash_set.dart
++1  −1   sdk/lib/collection/iterable.dart
++4  −4   sdk/lib/collection/list.dart
++8  −8   sdk/lib/collection/maps.dart
++10 −10  sdk/lib/collection/set.dart
++11 −11  sdk/lib/collection/splay_tree.dart
++3  −3   sdk/lib/convert/ascii.dart
++1  −1   sdk/lib/convert/json.dart
++19 −0   sdk/lib/core/core.dart
++3  −3   sdk/lib/core/errors.dart
++1  −1   sdk/lib/core/function.dart
++2  −2   sdk/lib/core/identical.dart
++3  −3   sdk/lib/core/int.dart
++1  −1   sdk/lib/core/iterable.dart
++1  −1   sdk/lib/core/list.dart
++4  −4   sdk/lib/core/map.dart
++2  −0   sdk/lib/core/null.dart
++3  −3   sdk/lib/core/num.dart
++7  −7   sdk/lib/core/set.dart
++1  −1   sdk/lib/core/string.dart
++3  −3   sdk/lib/core/string_buffer.dart
++1  −1   sdk/lib/core/symbol.dart
++4  −4   sdk/lib/core/uri.dart
++2  −2   sdk/lib/internal/iterable.dart
++3  −3   sdk/lib/internal/list.dart

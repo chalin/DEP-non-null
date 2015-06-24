@@ -28,6 +28,7 @@ We define the internal class `_Anything` as the **new root** of the class hierar
 abstract class _Anything { const _Anything(); }
 
 abstract class _Basic extends _Anything {
+  bool operator ==(other) => identical(this, other);
   int get hashCode;
   String toString();
   dynamic noSuchMethod(Invocation invocation);
@@ -36,12 +37,11 @@ abstract class _Basic extends _Anything {
 
 class Object extends _Anything implements _Basic {
   const Object();
-  bool operator ==(other) => identical(this, other);
   ... // Methods of _Basic are all declared external
 }
 ```
 
-The definition of `Null` is the same as in [DartC][] except that the class extends `_Anything` and implements `_Basic`. The semantic rules of equality ([DSS][] 16.22 "Equality"), deal explicitly with cases where either operand is `null`. Thus `null` can never be a receiver nor an argument to the `==` operator, and so `==` is excluded from `_Basic`.
+The definition of `Null` is the same as in [DartC][] except that the class extends `_Anything` and implements `_Basic`. The latter declares all members of [DartC][]'s `Object`. Note that the declaration of equality allows a `null` operand (such a definition is needed, e.g., by the [Dart Analyzer][]).
 
 > Comment. Declaring `_Anything` as a class without methods allows us to provide a conventional definition for `void` as an empty interface, realized only by `Null`:
 >
@@ -110,7 +110,6 @@ int applyTo1(?_ANON f) => f == null ? 1 : f(1);
 This syntactic extension to function signatures can only be used in formal parameter declarations, not in other places in which function signatures are permitted by the grammar (e.g., class member declarations and type aliases).
 
 > Comment. We avoid suggesting the use of `?` as a *prefix* to the function name since that could be interpreted as an implicitly (nullable) `dynamic` return type when no return type is provided.
-
 
 ## B.3 Semantics {#nnbd-semantics}
 
@@ -185,6 +184,60 @@ Explicit initialization checks are extended to also address cases of implicit in
 >		- No effect on production mode execution.
 >
 > - In the case of a local variable statically declared non-null but not explicitly initialized, a problem ([static warning][] or [dynamic type error][]) need only be reported if there is an attempt to use the local variable before it is explicitly assigned to.
+
+&nbsp;
+
+### B.3.5 Adjusted semantics for "assignment compatible" ($\Longleftrightarrow$) {#new-assignment-semantics}
+
+Consider the following [DartNNBD][] code:
+
+```dart
+?int i = 1; // ok
+class C1<T1 extends int> { T1 i1 = 1; } // ok
+class C2<T2 extends int> { ?T2 i2 = 1; } // should be ok
+```
+
+According to the [DartC][] definition of [assignment compatible][] described in [A.1.4](#def-subtype), a [static warning][] should be reported for the initialization of `i2`. To understand why, let us examine the general case of
+
+```dart
+class C<T extends B> { T o = s; }
+```
+
+where `s` is some expression of type $S$. Let us write $T^B$ to represent that the type parameter $T$ has upper bound $B$. The assignment to `o` is valid if $S$ is [assignment compatible][] with $T$, i.e., $S \Longleftrightarrow T^B$ (by definition of $\Longleftrightarrow$). But $T^B$ is incomparable when it is not instantiated. The best we can do is compare $S$ to $B$ and try to establish that $B \subtype S$. Thus, $S \Longleftrightarrow T^B$
+
+$= S \subtype T^B \lor T^B \subtype S$ (by definition of $\Longleftrightarrow$) <br/> \
+$\impliedby S \subtype T^B \lor T^B \subtype B \land B \subtype S$ <br/> \
+$= S \subtype T^B \lor B \subtype S$ (simplified because $B$ is the upper bound of $T^B$).
+
+where $\impliedby$ is reverse implication. In the case of class `C2` above, the field `i2` is of type ?`T2`, hence we are dealing with the general case: $S \Longleftrightarrow \qn{}T^B$
+
+$= S \subtype \qn{}T^B \lor \qn{}T^B \subtype S$ (by definition of $\Longleftrightarrow$) <br/> \
+$= S \subtype Null \lor S \subtype T^B \lor \qn{}T^B \subtype S$ (property of ?) <br/> \
+$= S \subtype Null \lor S \subtype T^B \lor (Null \subtype S \land T^B \subtype S)$ (property of ?) <br/> \
+$\impliedby S \subtype Null \lor S \subtype T^B \lor (Null \subtype S \land T^B \subtype B \land B \subtype S)$ <br/> \
+$= S \subtype Null \lor S \subtype T^B \lor (Null \subtype S \land B \subtype S)$. (*)
+
+If we substitute the type of `i2` and the bound of `T2` for $S$ and $B$ in (*) and we get:
+
+$\inttype \subtype Null \lor \inttype \subtype T^{\inttype} \lor (Null \subtype \inttype \land \inttype \subtype \inttype)$ <br/> \
+$= \false \lor \inttype \subtype T^{\inttype} \lor (\false \land \true)$ <br/> \
+$= \inttype \subtype T^{\inttype} \lor \false$ <br/> \
+$= \false$.
+
+This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible][] is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS][] 19.4):
+
+> An interface type $T$ may be assigned to a type $S$, written  $T \Longleftrightarrow S$, iff either $T \subtype S$ or $S \subtype T$. 
+> _This rule may surprise readers accustomed to conventional typechecking. The intent of the $\Longleftrightarrow$ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work._
+
+In the spirit of the commentary, we redefine "[assignment compatible][]" as follows: if $T$ and $S$ are non-null types, then the definition is as in [DartC][]. Otherwise, suppose $T$ is the nullable union type $\qn{}U$, then $\qn{}U$ and $S$ are assignment compatible iff $S$ is assignment compatible with `Null` _or_ with $U$. I.e., $\qn{}U \Longleftrightarrow S$ iff
+
+$Null \Longleftrightarrow S \lor U \Longleftrightarrow S$.
+
+If we expand this new definition, we end up with the formula (*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible][], `i2` can be initialized with an `int` in [DartNNBD][].
+
+### B.3.6 Static semantics of members of ?T {#multi-members}
+
+We define the static semantics of the members of ?*T* as if it were an anonymous class with `Null` and *T* as superinterfaces. Then the rules of member inheritance and type overrides as defined in ([DSS][] 11.1.1) apply.
 
 ## B.4 Discussion
 
