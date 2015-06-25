@@ -1,6 +1,6 @@
 # Dart DEP for Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-06-24 (0.5.0) - [revision history](#revision-history)
+#### 2015-06-25 (0.5.1) - [revision history](#revision-history)
 
 -   [Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -2019,7 +2019,7 @@ Our initial objective has been to test run the new analyzer on sample projects. 
 
 [Dietl, 2014](http://cs.au.dk/~amoeller/tapas2014/dietl.pdf), reports 20 nullity annotations / KLOC (anno/KLOC). So far, nullable annotation density for the SDK sources have been:
 
--   0.1 anno/KLOC for the library (with \<1 line/KLOC of general changes related to nullity);
+-   \<1 anno/KLOC for the library core (with \<2 line/KLOC of general changes related to nullity);
 -   1 anno/KLOC for the samples.
 
 We attribute such a low annotation count to Dart’s relaxed definition of assignability (see [A.1.4](#assignment-compatible) and [B.3.5](#new-assignment-semantics)), and a judicious choice in the scope of [NNBD](#part-nnbd "Non-Null By Default") ([E.3.1](#nnbd-scope)), in particular for optional parameters—namely our dual-view approach and use of compile-time default values to influence the nullability ([E.1.1](#opt-func-param)).
@@ -2033,19 +2033,7 @@ Our strategy has been to run the [NNBD](#part-nnbd "Non-Null By Default") analyz
 
 -   `sdk/lib/core/core.dart` updated to include the definition of nullity annotations `@nullable`, `@non_null`, etc. (19 lines).
 
--   Only 6 nullable annotations have been required, such as the following from `lib/core/errors.dart`:
-
-    ``` java
-    static int checkValidRange(int start, /*?*/int end, int length, ...)
-    ```
-
--   Several of the generic collection class methods have been updated, replacing `Object` parameter types (since `Object` is non-null under [NNBD](#part-nnbd "Non-Null By Default")) with an appropriate generic type parameter (63 such changes); e.g., from `lib/core/set.dart`:
-
-    ``` java
-    bool contains(E value); //DEP30, was: Object value
-    ```
-
-    Although use of `Object` rather than `E` is [necessary in Java](http://stackoverflow.com/questions/104799/why-arent-java-collections-remove-methods-generic), we don’t believe that such a use is necessary in Dart. Hence, in our opinion, these signature changes are actually orthogonal to [NNBD](#part-nnbd "Non-Null By Default"), although the [NNBD](#part-nnbd "Non-Null By Default") analyzer made the issues evident.
+-   Nullable annotations were added in 70 locations. Most (64) were occurrences of `Object`.
 
 -   The remaining updates (10 lines) were necessary to overcome the limitations in the analyzer’s flow analysis capabilities. For example, when an optional nullable parameter is initialized to a non-null value when it is null at the point of call. This is a typical code change of this nature:
 
@@ -2069,7 +2057,7 @@ Our strategy has been to run the [NNBD](#part-nnbd "Non-Null By Default") analyz
 <a name="ii.3.3-sample-projects"></a>
 ### II.3.3 Sample projects
 
-As a sanity test we have run the [NNBD](#part-nnbd "Non-Null By Default") analyzer on itself. As expected, a large number of problems are reported, due the nullable nature of AST class type fields. We have chosen not to tackle the annotation of the analyzer code itself at the moment.
+As a sanity test we have run the [NNBD](#part-nnbd "Non-Null By Default") analyzer on itself. As expected, a large number of problems are reported, due the nullable nature of AST class type fields. We have chosen not to tackle the annotation of the full analyzer code itself at the moment. On the other hand, we have annotated the nullity specific code, for which we have a nullity annotation ratio is 10 anno/KLOC.
 
 As for other projects, to date, we have run the [NNBD](#part-nnbd "Non-Null By Default") analyzer over the following SDK `pkg` projects totaling 2K LOC:
 

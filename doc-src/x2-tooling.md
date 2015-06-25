@@ -111,7 +111,7 @@ Our initial objective has been to test run the new analyzer on sample projects. 
 
 [Dietl, 2014][], reports 20 nullity annotations / KLOC (anno/KLOC). So far, nullable annotation density for the SDK sources have been:
 
-- 0.1 anno/KLOC for the library (with <1 line/KLOC of general changes related to nullity);
+- <1 anno/KLOC for the library core (with <2 line/KLOC of general changes related to nullity);
 - 1 anno/KLOC for the samples.
 
 We attribute such a low annotation count to Dart's relaxed definition of assignability (see [A.1.4][assignment compatible] and [B.3.5](#new-assignment-semantics)), and a judicious choice in the scope of [NNBD][] ([E.3.1](#nnbd-scope)), in particular for optional parameters---namely our dual-view approach and use of compile-time default values to influence the nullability ([E.1.1](#opt-func-param)).
@@ -124,19 +124,7 @@ Our strategy has been to run the [NNBD][] analyzer over the SDK library and addr
 
 - `sdk/lib/core/core.dart` updated to include the definition of nullity annotations `@nullable`, `@non_null`, etc. (19 lines).
 
-- Only 6 nullable annotations have been required, such as the following from `lib/core/errors.dart`:
-
-    ```dart
-    static int checkValidRange(int start, /*?*/int end, int length, ...)
-    ```
-
-- Several of the generic collection class methods have been updated, replacing `Object` parameter types (since `Object` is non-null under [NNBD][]) with an appropriate generic type parameter (63 such changes); e.g., from `lib/core/set.dart`:
-
-    ```dart
-    bool contains(E value); //DEP30, was: Object value
-    ```
-
-    Although use of `Object` rather than `E` is [necessary in Java][SO104799], we don't believe that such a use is necessary in Dart. Hence, in our opinion, these signature changes are actually orthogonal to [NNBD][], although the [NNBD][] analyzer made the issues evident.
+- Nullable annotations were added in 70 locations. Most (64) were occurrences of `Object`.
 
 - The remaining updates (10 lines) were necessary to overcome the limitations in the analyzer's flow analysis capabilities. For example, when an optional nullable parameter is initialized to a non-null value when it is null at the point of call. This is a typical code change of this nature:
 
@@ -161,7 +149,7 @@ Our strategy has been to run the [NNBD][] analyzer over the SDK library and addr
 
 ### II.3.3 Sample projects
 
-As a sanity test we have run the [NNBD][] analyzer on itself. As expected, a large number of problems are reported, due the nullable nature of AST class type fields. We have chosen not to tackle the annotation of the analyzer code itself at the moment.
+As a sanity test we have run the [NNBD][] analyzer on itself. As expected, a large number of problems are reported, due the nullable nature of AST class type fields. We have chosen not to tackle the annotation of the full analyzer code itself at the moment. On the other hand, we have annotated the nullity specific code, for which we have a nullity annotation ratio is 10 anno/KLOC.
 
 As for other projects, to date, we have run the [NNBD][] analyzer over the following SDK `pkg` projects totaling 2K LOC:
 
