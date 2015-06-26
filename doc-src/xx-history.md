@@ -2,7 +2,15 @@
 
 Major updates are documented here.
 
-## 2016.02.24 (0.5.0)
+## 2016.02.26 (0.6.0) {#rev-060}
+
+**New**
+
+- [B.3.7](#type-promotion). Type promotion.
+- [B.3.8](#lub). Type least upper bound.
+- [B.3.9](#null-awareoperators). Null-aware operators. (Placeholder, section TBC)
+
+## 2016.02.24 (0.5.0) {#rev-050}
 
 The main change is the addition of [Appendix II. Tooling and preliminary experience report](#appendix-tooling). In terms of individuals section changes we have:
 

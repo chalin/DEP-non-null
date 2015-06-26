@@ -239,6 +239,28 @@ If we expand this new definition, we end up with the formula (*) as above, excep
 
 We define the static semantics of the members of ?*T* as if it were an anonymous class with `Null` and *T* as superinterfaces. Then the rules of member inheritance and type overrides as defined in ([DSS][] 11.1.1) apply.
 
+### B.3.7 Type promotion {#type-promotion}
+
+In the context of `if` statements, conditional expressions, and conjunction and disjunction expressions, the following type promotions shall be performed for any expression *e* of type ?*T*:
+
+|  Condition   |  True context  |  False context
+| ------------ | -------------- | ---------------
+| *e* == null  | *e* is `Null`  | *e* is *T*
+| *e* != null  | *e* is *T*     | *e* is `Null`
+| *e* is *T*   | *e* is *T*     | -
+| *e* is! *T*  | -              | *e* is *T*
+
+
+This applies to function types as well.
+
+### B.3.8 Type least upper bound {#lub}
+
+The least upperbound of `Null` and any non-`void` type *T* is ?*T*.
+
+### B.3.9 Null-aware operators {#null-awareoperators}
+
+> Comment. TODO.
+
 ## B.4 Discussion
 
 ### B.4.1 Precedent: [Ceylon][]'s root is `Object` | `Null`{} {#ceylon-root}
@@ -262,6 +284,8 @@ Our main proposal ([B.3.4](#var-init)) preserves the [DartC][] semantics, i.e., 
 For variables statically declared as non-null, some might prefer to see this proposal _mandate_ (i.e., issue a compile-time error) if the variable is not explicitly initialized (with a value assignable to its statically declared type, and hence not `null`) but this would go against [G0, optional types](#g0).
 
 In our opinion, preserving the default variable initialization semantics of [DartC][] is the only approach that is consistent with [G0, optional types](#g0). Also see [I.3.2](#language-evolution) for a discussion of issues related to soundness. Although Dart's static type system is already unsound by design ([Brandt, 2011][]), this proposal does not contribute to (increase) the unsoundness because of non-null types. [NNBD][] scope and local variables are also discussed in [E.3.2(a)](#local-var-alt).
+
+Also see [E.3.2(a)](#discussion-nnbd-scope) and [E.3.6](#local-var-analysis).
 
 #### (b) Implicit type-specific initialization of non-null variables {- #type-specific-init}
 

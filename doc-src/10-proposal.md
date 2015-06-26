@@ -1,9 +1,9 @@
-# Non-null Types and Non-null By Default (NNBD) {- #part-main}
+# DEP #30: Non-null Types and Non-null By Default (NNBD) {- #part-main}
 
 ## Contact information {-}
 
 - [Patrice Chalin][], @[chalin][], [chalin@dsrg.org](mailto:chalin@dsrg.org)
-- **[DEP][] home**: [github.com/chalin/DEP-non-null][DEP-non-null].
+- **[DEP #30][] home**: [github.com/chalin/DEP-non-null][DEP-non-null].
 - **Additional stakeholders**:
     + Leaf Petersen, @[leafpetersen](https://github.com/leafpetersen), [Dart Dev Compiler][] team.
 
@@ -186,6 +186,9 @@ Once a "critical mass" of this proposal's features have gained approval, a fully
 - [B.3.3](#shared-type-op-semantics). Runtime representation of type operators and other shared semantics.
 - [B.3.5](#new-assignment-semantics). Adjusted semantics for "assignment compatible" ($\Longleftrightarrow$).
 - [B.3.6](#multi-members). Static semantics of members of ?T.
+- [B.3.7](#type-promotion). Type promotion.
+- [B.3.8](#lub). Type least upper bound.
+- [B.3.9](#null-awareoperators). Null-aware operators.
 - [D.2.1](#dynamic-and-type-operators). `!dynamic` is the unknown non-null type, and `?dynamic` is `dynamic`.
 - [D.2.2](#bang-dynamic-subtype-of). Defining `!dynamic <:` *S*.
 - [E.1.1](#opt-func-param). Optional parameters are nullable-by-default in function bodies only.

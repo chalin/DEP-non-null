@@ -43,7 +43,7 @@ We describe here the _added_ / _adapted_ analyzer processing (sub-)phases:
     (a) Nullity annotation resolution (earlier than would normally be done since nullity annotations impact _types_ in [DartNNBD][]). Note that we currently match annotation names only, regardless of library of origin so as to facilitate experimentation.
     (b) `NullityElement`s (see (b) below) are computed in a top-down manner, and attached to the AST nodes that they decorate (e.g., `TypeName`, `LibraryDirective`, etc.). The final nullity of a type name depends on: global defaults (whether [NNBD][] is enabled or not), `@nullable_by_default` nullity scope annotations, and individual declarator annotations.
 
-2. Element resolution (via `ElementResolver`) is enhanced to:
+2. Element resolution (via `ElementResolver` and `TypeResolverVisitor`) is enhanced to:
 
     (a) Adjust the static type associated with a, e.g., a `TypeName` based on its nullities.
     (b) Handle problem reporting for operator and method (including getter and setter) invocation over nullable targets.
@@ -52,14 +52,7 @@ We describe here the _added_ / _adapted_ analyzer processing (sub-)phases:
 
 4. Error verification has been adapted to, e.g., check for invalid implicit initialization of variables with `null` ([B.3.4](#var-init)); with the exclusion of final fields (whose initialization is checked separately).
 
-The [NNBD][] analyzer also builds upon existing [DartC][] flow analysis and type propagation facilities so that an expression *e* is of type ?*T* can have its type promoted in `if` statements and conditional expressions as follows:
-
-|  Condition   |  True context  |  False context  |
-| ------------ | -------------- | --------------- |
-| *e* == null  | *e* is `Null`  | *e* is *T*      |
-| *e* != null  | *e* is *T*     | *e* is `Null`   |
-| *e* is *T*   | *e* is *T*     | -               |
-| *e* is! *T*  | -              | *e* is *T*      |
+The [NNBD][] analyzer also builds upon existing [DartC][] flow analysis and type propagation facilities.
 
 > Caveat excerpt from a code comment: TODO(scheglov) type propagation for instance/top-level fields was disabled because it depends on the order or visiting. If both field and its client are in the same unit, and we visit the client before the field, then propagated type is not set yet.
 
@@ -88,18 +81,7 @@ There is approximately 1K [Source Lines Of Code (SLOC)][sloccount] of new code (
 
 ### II.2.3 Status {#analyzer-status}
 
-The variant of the proposal described in [II.1](#proposal-variant) has been implemented except for the following features which are planed, but not yet supported:
-
-- [B.2.5](#factory-constructors). Syntax for nullable factory constructors.
-- [D.2.1](#dynamic-and-type-operators). `!dynamic`. (partially supported)
-- [D.2.2](#bang-dynamic-subtype-of). Defining `!dynamic <:` *S*. (partially supported)
-- [E.3.6](#local-var-analysis). Reducing the annotation burden for local variables.
-
-Also, issues with flow analysis and function literal types are currently being addressed.
-
-Caveat: being a _prototype_ with experimental input syntax via annotations and comments, there is currently no checking of the validity of annotations (e.g., duplicate or misplaced annotations).
-
-To run the [NNBD][] analyzer from the command line one can use the author's [analyzer_cli fork (non-null branch)][chalin/analyzer_cli] with the `--enable-non-null` option _and_ by setting the environment variable `DEP_NNBD` to 1 (this latter requirement will be lifted at some point). Leaving `DEP_NNBD` undefined causes [NNBD][] code changes to be eliminated (at compile time) and hence the analyzer behaves as it would in [DartC][].
+Please see the GitHub [DEP #30 Analyzer project page][].
 
 ## II.3 Preliminary experience report {#experience-report}
 

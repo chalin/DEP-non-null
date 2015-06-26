@@ -21,6 +21,8 @@
 [Code Contracts]: http://research.microsoft.com/en-us/projects/contracts
 [Cyclone]: http://cyclone.thelanguage.org
 [DDC issue #64]: https://github.com/dart-lang/dev_compiler/issues/64
+[DEP #30 Analyzer project page]: https://github.com/chalin/sdk/tree/dep30/pkg/analyzer
+[DEP #30]: https://github.com/dart-lang/dart_enhancement_proposals/issues/30
 [DEP 2015/03/18]: https://github.com/dart-lang/dart_enhancement_proposals/blob/master/Meetings/2015-03-18%20DEP%20Committee%20Meeting.md#more-proposals
 [DEP-generic-functions]: https://github.com/leafpetersen/dep-generic-methods
 [DEP-metadata-for-type-annotations]: https://github.com/chalin/DEP-metadata-for-type-annotations
@@ -124,7 +126,7 @@
 [TypeScript]: http://www.typescriptlang.org
 [Use Java 8 Optional]: http://www.oracle.com/technetwork/articles/java/java8-optional-2175753.html
 [assignment compatible]: #assignment-compatible
-[chalin/analyzer_cli]: https://github.com/chalin/analyzer_cli/tree/non-null
+[chalin/analyzer_cli]: https://github.com/chalin/analyzer_cli/tree/dep30
 [chalin/sdk, dep30 branch]: https://github.com/chalin/sdk/tree/dep30
 [chalin/sdk]: https://github.com/chalin/sdk
 [chalin]: https://github.com/chalin

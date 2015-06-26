@@ -1,8 +1,8 @@
-# Dart DEP for Non-null Types and Non-null By Default (NNBD)
+# Dart DEP #30: Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-06-25 (0.5.1) - [revision history](#revision-history)
+#### 2015-06-26 (0.6.0) - [revision history](#revision-history)
 
--   [Non-null Types and Non-null By Default (NNBD)](#part-main)
+-   [DEP \#30: Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
     -   [1 Introduction](#introduction)
     -   [2 Motivation](#motivation)
@@ -49,6 +49,9 @@
         -   [B.3.4 Default initialization of non-null variables is like](#var-init)[DartC](#terms "Classic (i.e., current) Dart")
         -   [B.3.5 Adjusted semantics for “assignment compatible” (<span class="math"> ⇔ </span>)](#new-assignment-semantics)
         -   [B.3.6 Static semantics of members of ?T](#multi-members)
+        -   [B.3.7 Type promotion](#type-promotion)
+        -   [B.3.8 Type least upper bound](#lub)
+        -   [B.3.9 Null-aware operators](#null-awareoperators)
     -   [B.4 Discussion](#b.4-discussion)
         -   [B.4.1 Precedent:](#ceylon-root)[Ceylon](http://ceylon-lang.org)’s root is `Object` | `Null`
         -   [B.4.2 Default initialization of non-null variables, alternative approaches](#var-init-alt)
@@ -156,16 +159,17 @@
         -   [II.3.2 Dart SDK library](#ii.3.2-dart-sdk-library)
         -   [II.3.3 Sample projects](#ii.3.3-sample-projects)
 -   [Revision History](#revision-history)
-    -   [2016.02.24 (0.5.0)](#section)
+    -   [2016.02.26 (0.6.0)](#rev-060)
+    -   [2016.02.24 (0.5.0)](#rev-050)
 
 <a name="part-main"></a>
-# Non-null Types and Non-null By Default (NNBD)
+# DEP \#30: Non-null Types and Non-null By Default (NNBD)
 
 <a name="contact-information"></a>
 ## Contact information
 
 -   [Patrice Chalin](https://plus.google.com/+PatriceChalin), @[chalin](https://github.com/chalin), <chalin@dsrg.org>
--   **[DEP](https://github.com/dart-lang/dart_enhancement_proposals) home**: [github.com/chalin/DEP-non-null](https://github.com/chalin/DEP-non-null).
+-   **[DEP \#30](https://github.com/dart-lang/dart_enhancement_proposals/issues/30) home**: [github.com/chalin/DEP-non-null](https://github.com/chalin/DEP-non-null).
 -   **Additional stakeholders**:
     -   Leaf Petersen, @[leafpetersen](https://github.com/leafpetersen), [Dart Dev Compiler](https://github.com/dart-lang/dev_compiler) team.
 
@@ -347,6 +351,9 @@ Once a “critical mass” of this proposal’s features have gained approval, a
 -   [B.3.3](#shared-type-op-semantics). Runtime representation of type operators and other shared semantics.
 -   [B.3.5](#new-assignment-semantics). Adjusted semantics for “assignment compatible” (⟺).
 -   [B.3.6](#multi-members). Static semantics of members of ?T.
+-   [B.3.7](#type-promotion). Type promotion.
+-   [B.3.8](#lub). Type least upper bound.
+-   [B.3.9](#null-awareoperators). Null-aware operators.
 -   [D.2.1](#dynamic-and-type-operators). `!dynamic` is the unknown non-null type, and `?dynamic` is `dynamic`.
 -   [D.2.2](#bang-dynamic-subtype-of). Defining `!dynamic <:` *S*.
 -   [E.1.1](#opt-func-param). Optional parameters are nullable-by-default in function bodies only.
@@ -824,6 +831,30 @@ If we expand this new definition, we end up with the formula (\*) as above, exce
 
 We define the static semantics of the members of ?*T* as if it were an anonymous class with `Null` and *T* as superinterfaces. Then the rules of member inheritance and type overrides as defined in ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 11.1.1) apply.
 
+<a name="type-promotion"></a>
+### B.3.7 Type promotion
+
+In the context of `if` statements, conditional expressions, and conjunction and disjunction expressions, the following type promotions shall be performed for any expression *e* of type ?*T*:
+
+| Condition   | True context  | False context |
+|-------------|---------------|---------------|
+| *e* == null | *e* is `Null` | *e* is *T*    |
+| *e* != null | *e* is *T*    | *e* is `Null` |
+| *e* is *T*  | *e* is *T*    | -             |
+| *e* is! *T* | -             | *e* is *T*    |
+
+This applies to function types as well.
+
+<a name="lub"></a>
+### B.3.8 Type least upper bound
+
+The least upperbound of `Null` and any non-`void` type *T* is ?*T*.
+
+<a name="null-awareoperators"></a>
+### B.3.9 Null-aware operators
+
+> Comment. TODO.
+
 <a name="b.4-discussion"></a>
 ## B.4 Discussion
 
@@ -851,6 +882,8 @@ Our main proposal ([B.3.4](#var-init)) preserves the [DartC](#terms "Classic (i.
 For variables statically declared as non-null, some might prefer to see this proposal *mandate* (i.e., issue a compile-time error) if the variable is not explicitly initialized (with a value assignable to its statically declared type, and hence not `null`) but this would go against [G0, optional types](#g0).
 
 In our opinion, preserving the default variable initialization semantics of [DartC](#terms "Classic (i.e., current) Dart") is the only approach that is consistent with [G0, optional types](#g0). Also see [I.3.2](#language-evolution) for a discussion of issues related to soundness. Although Dart’s static type system is already unsound by design ([Brandt, 2011](https://www.dartlang.org/articles/why-dart-types "Why Dart Types Are Optional and Unsound")), this proposal does not contribute to (increase) the unsoundness because of non-null types. [NNBD](#part-nnbd "Non-Null By Default") scope and local variables are also discussed in [E.3.2(a)](#local-var-alt).
+
+Also see [E.3.2(a)](#discussion-nnbd-scope) and [E.3.6](#local-var-analysis).
 
 <a name="type-specific-init"></a>
 #### (b) Implicit type-specific initialization of non-null variables
@@ -1404,9 +1437,9 @@ In contrast, static type annotations are optional in Dart, and a common idiom is
 
 > PREFER using `var` without a type annotation for local variables.
 
-In light of this idiom, if a developer goes out of his or her way to write an explicit static type annotation, then we believe that the type should be interpreted literally; it is for this reason that we have chosen to include local variable declarations in the scope of [NNBD](#part-nnbd "Non-Null By Default"). As a benefit, we retain referential transparency for all ([non-optional](#opt-func-param)) variable declaration kinds—in particular instance variables and local variables.
+In light of this idiom, if a developer goes out of his or her way to write an explicit static type annotation, then we believe that the type should be interpreted literally; it is for this reason that we have chosen to include local variable declarations in the scope of [NNBD](#part-nnbd "Non-Null By Default") ([B.3.4](#var-init), [B.4.2](#var-init-alt)(a)). As a benefit, we retain referential transparency for all ([non-optional](#opt-func-param)) variable declaration kinds—in particular instance variables and local variables.
 
-As applied to local variables, the [NNBD](#part-nnbd "Non-Null By Default") rule of this proposal may result in extra warnings when [DartC](#terms "Classic (i.e., current) Dart") code is migrated to [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), but such warnings will *not* prevent the code from being executed in production mode—in strongly typed languages like Java, such migrated code would simply *not run*, and so our approach would not be a realistic alternative. Also, in the case of Dart code migration, tooling can contribute to the elimination of such warnings by automatically annotating explicitly typed local variables determined to be nullable ([G0, ease migration](#g0)).
+As applied to local variables, the [NNBD](#part-nnbd "Non-Null By Default") rule of this proposal may result in extra warnings when [DartC](#terms "Classic (i.e., current) Dart") code is migrated to [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"), but such warnings will *not* prevent the code from being executed in production mode—in strongly typed languages like Java, such migrated code would simply *not run*, and so our approach would not be a realistic alternative. Also, in the case of Dart code migration, tooling can contribute to the elimination of such warnings by automatically annotating explicitly typed local variables determined to be nullable ([G0, ease migration](#g0)). The strategy proposed in [E.3.6](#local-var-analysis) can also help reduce warnings.
 
 <a name="b-type-tests"></a>
 #### (b) Type tests
@@ -1949,7 +1982,7 @@ We describe here the *added* / *adapted* analyzer processing (sub-)phases:
     1.  Nullity annotation resolution (earlier than would normally be done since nullity annotations impact *types* in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics")). Note that we currently match annotation names only, regardless of library of origin so as to facilitate experimentation.
     2.  `NullityElement`s (see (b) below) are computed in a top-down manner, and attached to the AST nodes that they decorate (e.g., `TypeName`, `LibraryDirective`, etc.). The final nullity of a type name depends on: global defaults (whether [NNBD](#part-nnbd "Non-Null By Default") is enabled or not), `@nullable_by_default` nullity scope annotations, and individual declarator annotations.
 
-2.  Element resolution (via `ElementResolver`) is enhanced to:
+2.  Element resolution (via `ElementResolver` and `TypeResolverVisitor`) is enhanced to:
 
     1.  Adjust the static type associated with a, e.g., a `TypeName` based on its nullities.
     2.  Handle problem reporting for operator and method (including getter and setter) invocation over nullable targets.
@@ -1958,14 +1991,7 @@ We describe here the *added* / *adapted* analyzer processing (sub-)phases:
 
 4.  Error verification has been adapted to, e.g., check for invalid implicit initialization of variables with `null` ([B.3.4](#var-init)); with the exclusion of final fields (whose initialization is checked separately).
 
-The [NNBD](#part-nnbd "Non-Null By Default") analyzer also builds upon existing [DartC](#terms "Classic (i.e., current) Dart") flow analysis and type propagation facilities so that an expression *e* is of type ?*T* can have its type promoted in `if` statements and conditional expressions as follows:
-
-| Condition   | True context  | False context |
-|-------------|---------------|---------------|
-| *e* == null | *e* is `Null` | *e* is *T*    |
-| *e* != null | *e* is *T*    | *e* is `Null` |
-| *e* is *T*  | *e* is *T*    | -             |
-| *e* is! *T* | -             | *e* is *T*    |
+The [NNBD](#part-nnbd "Non-Null By Default") analyzer also builds upon existing [DartC](#terms "Classic (i.e., current) Dart") flow analysis and type propagation facilities.
 
 > Caveat excerpt from a code comment: TODO(scheglov) type propagation for instance/top-level fields was disabled because it depends on the order or visiting. If both field and its client are in the same unit, and we visit the client before the field, then propagated type is not set yet.
 
@@ -1994,18 +2020,7 @@ There is approximately 1K [Source Lines Of Code (SLOC)](http://www.dwheeler.com/
 <a name="analyzer-status"></a>
 ### II.2.3 Status
 
-The variant of the proposal described in [II.1](#proposal-variant) has been implemented except for the following features which are planed, but not yet supported:
-
--   [B.2.5](#factory-constructors). Syntax for nullable factory constructors.
--   [D.2.1](#dynamic-and-type-operators). `!dynamic`. (partially supported)
--   [D.2.2](#bang-dynamic-subtype-of). Defining `!dynamic <:` *S*. (partially supported)
--   [E.3.6](#local-var-analysis). Reducing the annotation burden for local variables.
-
-Also, issues with flow analysis and function literal types are currently being addressed.
-
-Caveat: being a *prototype* with experimental input syntax via annotations and comments, there is currently no checking of the validity of annotations (e.g., duplicate or misplaced annotations).
-
-To run the [NNBD](#part-nnbd "Non-Null By Default") analyzer from the command line one can use the author’s [analyzer\_cli fork (non-null branch)](https://github.com/chalin/analyzer_cli/tree/non-null) with the `--enable-non-null` option *and* by setting the environment variable `DEP_NNBD` to 1 (this latter requirement will be lifted at some point). Leaving `DEP_NNBD` undefined causes [NNBD](#part-nnbd "Non-Null By Default") code changes to be eliminated (at compile time) and hence the analyzer behaves as it would in [DartC](#terms "Classic (i.e., current) Dart").
+Please see the GitHub [DEP \#30 Analyzer project page](https://github.com/chalin/sdk/tree/dep30/pkg/analyzer).
 
 <a name="experience-report"></a>
 ## II.3 Preliminary experience report
@@ -2071,7 +2086,16 @@ Each projects required only a single nullity annotation. The remaining changes t
 
 Major updates are documented here.
 
-<a name="section"></a>
+<a name="rev-060"></a>
+## 2016.02.26 (0.6.0)
+
+**New**
+
+-   [B.3.7](#type-promotion). Type promotion.
+-   [B.3.8](#lub). Type least upper bound.
+-   [B.3.9](#null-awareoperators). Null-aware operators. (Placeholder, section TBC)
+
+<a name="rev-050"></a>
 ## 2016.02.24 (0.5.0)
 
 The main change is the addition of [Appendix II. Tooling and preliminary experience report](#appendix-tooling). In terms of individuals section changes we have:
