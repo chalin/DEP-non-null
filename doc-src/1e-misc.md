@@ -202,7 +202,7 @@ Given that `null` cannot be thrown ([DSS][] 16.9), it is meaningless to have a c
 
 ### E.3.6 Reducing the annotation burden for local variables, an alternative {#local-var-analysis}
 
-As an alternative to the strict initialization rules for variables (including local variables) discussed in [E.3.2(a)](#local-var-alt), we propose as an alternative that standard read-before-write analysis be used for non-null _local variables_ without an explicit initializer, to determine if its default initial value of `null` has the potential of being read before the variable is initialized.
+This section expands on [B.3.4.c](#var-local-init).2. We propose as an alternative that standard read-before-write analysis be used for non-null _local variables_ without an explicit initializer, to determine if its default initial value of `null` has the potential of being read before the variable is initialized.
 
 Consider the following illustration of a common coding idiom:
 

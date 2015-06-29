@@ -2,6 +2,10 @@
 
 Major updates are documented here.
 
+## 2016.02.29 (0.6.2) {#rev-062}
+
+Expansion and consolidation of proposal details concerning: [B.3.4](#var-init), Default initialization of non-null variables is like [DartC][]. Updates to [Appendix II](#appendix-tooling).
+
 ## 2016.02.26 (0.6.0) {#rev-060}
 
 **New**

@@ -46,11 +46,10 @@ We describe here the _added_ / _adapted_ analyzer processing (sub-)phases:
 2. Element resolution (via `ElementResolver` and `TypeResolverVisitor`) is enhanced to:
 
     (a) Adjust the static type associated with a, e.g., a `TypeName` based on its nullities.
-    (b) Handle problem reporting for operator and method (including getter and setter) invocation over nullable targets.
+    (b) Associate a callee view to each default parameter element and suitably adjust its type.
+    (c) Handle problem reporting for operator and method (including getter and setter) invocation over nullable targets.
 
-3. A late phase (after types have been resolved and compile-time constants computed) is used to adjust, if necessary, the types of optional parameters based on their default values ([E.1.1.1](#non-null-init)).
-
-4. Error verification has been adapted to, e.g., check for invalid implicit initialization of variables with `null` ([B.3.4](#var-init)); with the exclusion of final fields (whose initialization is checked separately).
+3. Error verification has been adapted to, e.g., check for invalid implicit initialization of variables with `null`. See [B.3.4](#var-init) for details.
 
 The [NNBD][] analyzer also builds upon existing [DartC][] flow analysis and type propagation facilities.
 
@@ -66,15 +65,16 @@ The [NNBD][]-enabled analyzer sources are in the author's GitHub Dart SDK fork @
 As of the time of writing, the [Dart Analyzer][] code change footprint (presented as a git diff summary) is:
 
 ```
-Showing  8 changed files  with 236 additions and 34 deletions.
-+3   −2  pkg/analyzer/lib/src/generated/ast.dart
-+5   −3  pkg/analyzer/lib/src/generated/constant.dart
-+39  −5  pkg/analyzer/lib/src/generated/element.dart
-+54  −9  pkg/analyzer/lib/src/generated/element_resolver.dart
-+17  −1  pkg/analyzer/lib/src/generated/engine.dart
-+24  −6  pkg/analyzer/lib/src/generated/error_verifier.dart
-+90  −7  pkg/analyzer/lib/src/generated/resolver.dart
-+4   −1  pkg/analyzer/lib/src/generated/static_type_analyzer.dart
+Showing  8 changed files  with 245 additions and 35 deletions.
++3   −2   pkg/analyzer/lib/src/generated/ast.dart
++5   −3   pkg/analyzer/lib/src/generated/constant.dart
++40  −5   pkg/analyzer/lib/src/generated/element.dart
++53  −9   pkg/analyzer/lib/src/generated/element_resolver.dart
++16  −0   pkg/analyzer/lib/src/generated/engine.dart
++10  −0   pkg/analyzer/lib/src/generated/error.dart
++20  −7   pkg/analyzer/lib/src/generated/error_verifier.dart
++94  −8   pkg/analyzer/lib/src/generated/resolver.dart
++4   −1   pkg/analyzer/lib/src/generated/static_type_analyzer.dart
 ```
 
 There is approximately 1K [Source Lines Of Code (SLOC)][sloccount] of new code (or 3K LOC including comments and whitespace).

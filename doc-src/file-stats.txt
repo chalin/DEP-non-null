@@ -1,54 +1,87 @@
-# Generated 2015.06.24 (start of day)
+# Generated 2015.06.29 (start of day)
 
-Showing  46 changed files  with 4,284 additions and 132 deletions.
-+3  −2   pkg/analyzer/lib/src/generated/ast.dart
-+5  −3   pkg/analyzer/lib/src/generated/constant.dart
-+39 −5   pkg/analyzer/lib/src/generated/element.dart
-+54 −9   pkg/analyzer/lib/src/generated/element_resolver.dart
-+17 −1   pkg/analyzer/lib/src/generated/engine.dart
-+24 −6   pkg/analyzer/lib/src/generated/error_verifier.dart
-+90 −7   pkg/analyzer/lib/src/generated/resolver.dart
-+4  −1   pkg/analyzer/lib/src/generated/static_type_analyzer.dart
+Showing  77 changed files  with 5,471 additions and 345 deletions.
 
-+54 −1   pkg/analyzer/lib/src/generated/testing/test_type_provider.dart
++17  −0   README.md
++87  −0   pkg/analyzer/Makefile
++125 −0   pkg/analyzer/README.md
 
-+11  −0  pkg/analyzer/lib/src/nullity/ast_part.dart
-+264 −0  pkg/analyzer/lib/src/nullity/element_core_part.dart
-+28  −0  pkg/analyzer/lib/src/nullity/element_general_part.dart
-+136 −0  pkg/analyzer/lib/src/nullity/element_nullity_part.dart
-+132 −0  pkg/analyzer/lib/src/nullity/element_resolver_part.dart
-+399 −0  pkg/analyzer/lib/src/nullity/element_type_part.dart
-+386 −0  pkg/analyzer/lib/src/nullity/resolver_part.dart
++3   −2   pkg/analyzer/lib/src/generated/ast.dart
++5   −3   pkg/analyzer/lib/src/generated/constant.dart
++40  −5   pkg/analyzer/lib/src/generated/element.dart
++53  −9   pkg/analyzer/lib/src/generated/element_resolver.dart
++16  −0   pkg/analyzer/lib/src/generated/engine.dart
++10  −0   pkg/analyzer/lib/src/generated/error.dart
++20  −7   pkg/analyzer/lib/src/generated/error_verifier.dart
++94  −8   pkg/analyzer/lib/src/generated/resolver.dart
++4   −1   pkg/analyzer/lib/src/generated/static_type_analyzer.dart
 
-+51  −0   pkg/analyzer/test/generated/Makefile
-+2,445 −0 pkg/analyzer/test/generated/nullity_test.dart
++11  −0   pkg/analyzer/lib/src/nullity/ast_part.dart
++275 −0   pkg/analyzer/lib/src/nullity/element_core_part.dart
++34  −0   pkg/analyzer/lib/src/nullity/element_general_part.dart
++138 −0   pkg/analyzer/lib/src/nullity/element_nullity_part.dart
++132 −0   pkg/analyzer/lib/src/nullity/element_resolver_part.dart
++392 −0   pkg/analyzer/lib/src/nullity/element_type_part.dart
++25  −0   pkg/analyzer/lib/src/nullity/error_verifier_non_null_local_var.dart
++122 −0   pkg/analyzer/lib/src/nullity/error_verifier_part.dart
++211 −0   pkg/analyzer/lib/src/nullity/resolver_core_part.dart
++237 −0   pkg/analyzer/lib/src/nullity/resolver_meta_type_annotation_part.dart
+
++54  −1   pkg/analyzer/lib/src/generated/testing/test_type_provider.dart
++3,011 −0 pkg/analyzer/test/generated/nullity_test.dart
 +24  −0   pkg/analyzer/test/generated/resolver_test.dart
 
-+17 −17  pkg/expect/lib/expect.dart
-+1  −1   pkg/fixnum/lib/src/int64.dart
++17  −17  pkg/expect/lib/expect.dart
++1   −1   pkg/fixnum/lib/src/int64.dart
 
-+2  −2   sdk/lib/collection/hash_set.dart
-+1  −1   sdk/lib/collection/iterable.dart
-+4  −4   sdk/lib/collection/list.dart
-+8  −8   sdk/lib/collection/maps.dart
-+10 −10  sdk/lib/collection/set.dart
-+11 −11  sdk/lib/collection/splay_tree.dart
-+3  −3   sdk/lib/convert/ascii.dart
-+1  −1   sdk/lib/convert/json.dart
-+19 −0   sdk/lib/core/core.dart
-+3  −3   sdk/lib/core/errors.dart
-+1  −1   sdk/lib/core/function.dart
-+2  −2   sdk/lib/core/identical.dart
-+3  −3   sdk/lib/core/int.dart
-+1  −1   sdk/lib/core/iterable.dart
-+1  −1   sdk/lib/core/list.dart
-+4  −4   sdk/lib/core/map.dart
-+2  −0   sdk/lib/core/null.dart
-+3  −3   sdk/lib/core/num.dart
-+7  −7   sdk/lib/core/set.dart
-+1  −1   sdk/lib/core/string.dart
-+3  −3   sdk/lib/core/string_buffer.dart
-+1  −1   sdk/lib/core/symbol.dart
-+4  −4   sdk/lib/core/uri.dart
-+2  −2   sdk/lib/internal/iterable.dart
-+3  −3   sdk/lib/internal/list.dart
++2   −2   sdk/bin/dartanalyzer_sdk
+
++1   −1   sdk/lib/async/async_error.dart
++5   −5   sdk/lib/async/broadcast_stream_controller.dart
++2   −2   sdk/lib/async/future.dart
++4   −4   sdk/lib/async/future_impl.dart
++4   −4   sdk/lib/async/schedule_microtask.dart
++14  −14  sdk/lib/async/stream.dart
++8   −8   sdk/lib/async/stream_controller.dart
++17  −17  sdk/lib/async/stream_impl.dart
++3   −3   sdk/lib/async/stream_pipe.dart
++2   −2   sdk/lib/async/stream_transformers.dart
++50  −50  sdk/lib/async/zone.dart
++2   −2   sdk/lib/collection/hash_set.dart
++4   −4   sdk/lib/collection/iterable.dart
++6   −6   sdk/lib/collection/linked_list.dart
++6   −6   sdk/lib/collection/list.dart
++9   −9   sdk/lib/collection/maps.dart
++9   −9   sdk/lib/collection/queue.dart
++12  −12  sdk/lib/collection/set.dart
++25  −25  sdk/lib/collection/splay_tree.dart
++3   −3   sdk/lib/convert/ascii.dart
++1   −1   sdk/lib/convert/encoding.dart
++3   −3   sdk/lib/convert/html_escape.dart
++6   −6   sdk/lib/convert/json.dart
++1   −1   sdk/lib/convert/latin1.dart
++2   −2   sdk/lib/convert/line_splitter.dart
++1   −1   sdk/lib/convert/utf.dart
++19  −0   sdk/lib/core/core.dart
++11  −11  sdk/lib/core/errors.dart
++1   −1   sdk/lib/core/exceptions.dart
++2   −2   sdk/lib/core/function.dart
++2   −2   sdk/lib/core/identical.dart
++3   −3   sdk/lib/core/int.dart
++4   −4   sdk/lib/core/iterable.dart
++1   −1   sdk/lib/core/list.dart
++4   −4   sdk/lib/core/map.dart
++3   −0   sdk/lib/core/null.dart
++3   −3   sdk/lib/core/num.dart
++7   −7   sdk/lib/core/set.dart
++2   −2   sdk/lib/core/stopwatch.dart
++7   −7   sdk/lib/core/string.dart
++3   −3   sdk/lib/core/string_buffer.dart
++1   −1   sdk/lib/core/symbol.dart
++18  −18  sdk/lib/core/uri.dart
++11  −11  sdk/lib/internal/iterable.dart
++3   −3   sdk/lib/internal/list.dart
++1   −1   sdk/lib/internal/print.dart
++2   −2   sdk/lib/io/http_headers.dart
++2   −2   sdk/lib/io/secure_socket.dart
++1   −1   sdk/lib/math/rectangle.dart

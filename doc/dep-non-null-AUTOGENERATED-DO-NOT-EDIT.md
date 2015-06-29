@@ -1,6 +1,6 @@
 # Dart DEP #30: Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-06-26 (0.6.0) - [revision history](#revision-history)
+#### 2015-06-29 (0.6.2) - [revision history](#revision-history)
 
 -   [DEP \#30: Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -47,6 +47,9 @@
         -   [B.3.2 Semantics of `!`](#semantics-of-bang)
         -   [B.3.3 Runtime representation of type operators and other shared semantics](#shared-type-op-semantics)
         -   [B.3.4 Default initialization of non-null variables is like](#var-init)[DartC](#terms "Classic (i.e., current) Dart")
+            -   [(a) Instance variables](#a-instance-variables)
+            -   [(b) Class (static) and library variables](#b-class-static-and-library-variables)
+            -   [(c) Local variables](#var-local-init)
         -   [B.3.5 Adjusted semantics for “assignment compatible” (<span class="math"> ⇔ </span>)](#new-assignment-semantics)
         -   [B.3.6 Static semantics of members of ?T](#multi-members)
         -   [B.3.7 Type promotion](#type-promotion)
@@ -159,6 +162,7 @@
         -   [II.3.2 Dart SDK library](#ii.3.2-dart-sdk-library)
         -   [II.3.3 Sample projects](#ii.3.3-sample-projects)
 -   [Revision History](#revision-history)
+    -   [2016.02.29 (0.6.2)](#rev-062)
     -   [2016.02.26 (0.6.0)](#rev-060)
     -   [2016.02.24 (0.5.0)](#rev-050)
 
@@ -765,18 +769,38 @@ We make no changes to the rules regarding default variable initialization, even 
 
 > Comment. The term *variable* refers to a “storage location in memory”, and encompasses local variables, library variables, instance variables, etc. ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 8).
 
-Explicit initialization checks are extended to also address cases of implicit initialization with `null`.
+Explicit initialization checks are extended to also address cases of implicit initialization with `null`. Thus, generally speaking, explicit or implicit initialization of a variable with a value whose static type cannot be [assigned to](#def-subtype) the variable, will result in:
 
-> Comments:
->
-> -   Thus, explicit or implicit initialization of a variable with a value whose static type cannot be [assigned to](#def-subtype) the variable, will result in:
->
->     -   [Static warning](#terms "A problem reported by the static checker").
->     -   [Dynamic type error](#terms "A type error reported in checked mode").
->     -   No effect on production mode execution.
-> -   In the case of a local variable statically declared non-null but not explicitly initialized, a problem ([static warning](#terms "A problem reported by the static checker") or [dynamic type error](#terms "A type error reported in checked mode")) need only be reported if there is an attempt to use the local variable before it is explicitly assigned to.
->
- 
+-   [Static warning](#terms "A problem reported by the static checker").
+-   [Dynamic type error](#terms "A type error reported in checked mode").
+-   No effect on production mode execution.
+
+Rule details are given next.
+
+<a name="a-instance-variables"></a>
+#### (a) Instance variables
+
+An instance variable *v* that is:
+
+1.  `final`, or
+2.  declared in a non-`abstract` class and for which: `null` cannot be [assigned to](#def-subtype) the (actual) type of *v*;
+
+then *v* be explicitly initialized (either from a declarator initializer, a field formal parameter, or a constructor field initialization).
+
+> Comment. Conforming to [DartC](#terms "Classic (i.e., current) Dart"), the above holds true for nullable `final` instance variables even if this is not strictly necessary. In (2) we disregard abstract classes since we cannot easily and soundly determine if all of its uses (e.g. as an interface, mixin or extends clause target) will result in all non-null instance variables being explicitly initialized).
+
+<a name="b-class-static-and-library-variables"></a>
+#### (b) Class (static) and library variables
+
+A class or library variable that is (1) `const` or `final`, or (2) declared non-null, must be explicitly initialized.
+
+> Comment. Conforming to [DartC](#terms "Classic (i.e., current) Dart"), the above holds true for nullable `const` or `final` variables even if this is not strictly necessary.
+
+<a name="var-local-init"></a>
+#### (c) Local variables
+
+1.  A `const` or `final` local variable must be explicitly initialized.
+2.  For a non-null local variable, a [static warning](#terms "A problem reported by the static checker") (and a [dynamic type error](#terms "A type error reported in checked mode")) will result if there is a path from its declaration to an occurrence of the variable where its value is being read. If a local variable read in inside a closure, then it is assumed to be read at the point of declaration of the closure. Also see [E.3.6](#local-var-analysis).
 
 <a name="new-assignment-semantics"></a>
 ### B.3.5 Adjusted semantics for “assignment compatible” (⟺)
@@ -818,7 +842,7 @@ If we substitute the type of `i2` and the bound of `T2` for *S* and *B* in (\*) 
 
 This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible](#assignment-compatible) is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.4):
 
-> An interface type *T* may be assigned to a type *S*, written *T ⟺ S*, iff either *T \<: S* or *S \<: T*. *This rule may surprise readers accustomed to conventional typechecking. The intent of the ⟺ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work.*
+> An interface type *T* may be assigned to a type *S*, written *T ⟺ S*, iff either *T \<: S* or *S \<: T*. *This rule may surprise readers accustomed to conventional type checking. The intent of the ⟺ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work.*
 
 In the spirit of the commentary, we redefine “[assignment compatible](#assignment-compatible)” as follows: if *T* and *S* are non-null types, then the definition is as in [DartC](#terms "Classic (i.e., current) Dart"). Otherwise, suppose *T* is the nullable union type *?U*, then *?U* and *S* are assignment compatible iff *S* is assignment compatible with `Null` *or* with *U*. I.e., *?U ⟺ S* iff
 
@@ -848,7 +872,7 @@ This applies to function types as well.
 <a name="lub"></a>
 ### B.3.8 Type least upper bound
 
-The least upperbound of `Null` and any non-`void` type *T* is ?*T*.
+The least upper bound of `Null` and any non-`void` type *T* is ?*T*.
 
 <a name="null-awareoperators"></a>
 ### B.3.9 Null-aware operators
@@ -1489,7 +1513,7 @@ Given that `null` cannot be thrown ([DSS](http://www.ecma-international.org/publ
 <a name="local-var-analysis"></a>
 ### E.3.6 Reducing the annotation burden for local variables, an alternative
 
-As an alternative to the strict initialization rules for variables (including local variables) discussed in [E.3.2(a)](#local-var-alt), we propose as an alternative that standard read-before-write analysis be used for non-null *local variables* without an explicit initializer, to determine if its default initial value of `null` has the potential of being read before the variable is initialized.
+This section expands on [B.3.4.c](#var-local-init).2. We propose as an alternative that standard read-before-write analysis be used for non-null *local variables* without an explicit initializer, to determine if its default initial value of `null` has the potential of being read before the variable is initialized.
 
 Consider the following illustration of a common coding idiom:
 
@@ -1985,11 +2009,10 @@ We describe here the *added* / *adapted* analyzer processing (sub-)phases:
 2.  Element resolution (via `ElementResolver` and `TypeResolverVisitor`) is enhanced to:
 
     1.  Adjust the static type associated with a, e.g., a `TypeName` based on its nullities.
-    2.  Handle problem reporting for operator and method (including getter and setter) invocation over nullable targets.
+    2.  Associate a callee view to each default parameter element and suitably adjust its type.
+    3.  Handle problem reporting for operator and method (including getter and setter) invocation over nullable targets.
 
-3.  A late phase (after types have been resolved and compile-time constants computed) is used to adjust, if necessary, the types of optional parameters based on their default values ([E.1.1.1](#non-null-init)).
-
-4.  Error verification has been adapted to, e.g., check for invalid implicit initialization of variables with `null` ([B.3.4](#var-init)); with the exclusion of final fields (whose initialization is checked separately).
+3.  Error verification has been adapted to, e.g., check for invalid implicit initialization of variables with `null`. See [B.3.4](#var-init) for details.
 
 The [NNBD](#part-nnbd "Non-Null By Default") analyzer also builds upon existing [DartC](#terms "Classic (i.e., current) Dart") flow analysis and type propagation facilities.
 
@@ -2005,15 +2028,16 @@ The [NNBD](#part-nnbd "Non-Null By Default")-enabled analyzer sources are in the
 
 As of the time of writing, the [Dart Analyzer](https://www.dartlang.org/tools/analyzer) code change footprint (presented as a git diff summary) is:
 
-    Showing  8 changed files  with 236 additions and 34 deletions.
-    +3   −2  pkg/analyzer/lib/src/generated/ast.dart
-    +5   −3  pkg/analyzer/lib/src/generated/constant.dart
-    +39  −5  pkg/analyzer/lib/src/generated/element.dart
-    +54  −9  pkg/analyzer/lib/src/generated/element_resolver.dart
-    +17  −1  pkg/analyzer/lib/src/generated/engine.dart
-    +24  −6  pkg/analyzer/lib/src/generated/error_verifier.dart
-    +90  −7  pkg/analyzer/lib/src/generated/resolver.dart
-    +4   −1  pkg/analyzer/lib/src/generated/static_type_analyzer.dart
+    Showing  8 changed files  with 245 additions and 35 deletions.
+    +3   −2   pkg/analyzer/lib/src/generated/ast.dart
+    +5   −3   pkg/analyzer/lib/src/generated/constant.dart
+    +40  −5   pkg/analyzer/lib/src/generated/element.dart
+    +53  −9   pkg/analyzer/lib/src/generated/element_resolver.dart
+    +16  −0   pkg/analyzer/lib/src/generated/engine.dart
+    +10  −0   pkg/analyzer/lib/src/generated/error.dart
+    +20  −7   pkg/analyzer/lib/src/generated/error_verifier.dart
+    +94  −8   pkg/analyzer/lib/src/generated/resolver.dart
+    +4   −1   pkg/analyzer/lib/src/generated/static_type_analyzer.dart
 
 There is approximately 1K [Source Lines Of Code (SLOC)](http://www.dwheeler.com/sloccount) of new code (or 3K LOC including comments and whitespace).
 
@@ -2085,6 +2109,11 @@ Each projects required only a single nullity annotation. The remaining changes t
 # Revision History
 
 Major updates are documented here.
+
+<a name="rev-062"></a>
+## 2016.02.29 (0.6.2)
+
+Expansion and consolidation of proposal details concerning: [B.3.4](#var-init), Default initialization of non-null variables is like [DartC](#terms "Classic (i.e., current) Dart"). Updates to [Appendix II](#appendix-tooling).
 
 <a name="rev-060"></a>
 ## 2016.02.26 (0.6.0)

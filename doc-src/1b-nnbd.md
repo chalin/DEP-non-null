@@ -173,19 +173,35 @@ We make no changes to the rules regarding default variable initialization, even 
 
 > Comment. The term *variable* refers to a "storage location in memory", and encompasses local variables, library variables, instance variables, etc. ([DSS][] 8).
 
-Explicit initialization checks are extended to also address cases of implicit initialization with `null`.
+Explicit initialization checks are extended to also address cases of implicit initialization with `null`. Thus, generally speaking, explicit or implicit initialization of a variable with a value whose static type cannot be [assigned to](#def-subtype) the variable, will result in:
 
-> Comments:
->
-> - Thus, explicit or implicit initialization of a variable with a value whose static type cannot be [assigned to](#def-subtype) the variable, will result in:
-> 
->		- [Static warning][].
->		- [Dynamic type error][].
->		- No effect on production mode execution.
->
-> - In the case of a local variable statically declared non-null but not explicitly initialized, a problem ([static warning][] or [dynamic type error][]) need only be reported if there is an attempt to use the local variable before it is explicitly assigned to.
+- [Static warning][].
+- [Dynamic type error][].
+- No effect on production mode execution.
 
-&nbsp;
+Rule details are given next.
+
+#### (a) Instance variables
+
+An instance variable *v* that is:
+
+1. `final`, or
+2. declared in a non-`abstract` class and for which: `null` cannot be [assigned to](#def-subtype) the (actual) type of *v*;
+
+then *v* be explicitly initialized (either from a declarator initializer, a field formal parameter, or a constructor field initialization).
+
+> Comment. Conforming to [DartC][], the above holds true for nullable `final` instance variables even if this is not strictly necessary. In (2) we disregard abstract classes since we cannot easily and soundly determine if all of its uses (e.g. as an interface, mixin or extends clause target) will result in all non-null instance variables being explicitly initialized).
+
+#### (b) Class (static) and library variables
+
+A class or library variable that is (1) `const` or `final`, or (2) declared non-null, must be explicitly initialized.
+
+> Comment. Conforming to [DartC][], the above holds true for nullable `const` or `final` variables even if this is not strictly necessary.
+
+#### (c) Local variables {#var-local-init}
+
+(1) A `const` or `final` local variable  must be explicitly initialized.
+(2) For a non-null local variable, a [static warning][] (and a [dynamic type error][]) will result if there is a path from its declaration to an occurrence of the variable where its value is being read. If a local variable read in inside a closure, then it is assumed to be read at the point of declaration of the closure. Also see [E.3.6](#local-var-analysis).
 
 ### B.3.5 Adjusted semantics for "assignment compatible" ($\Longleftrightarrow$) {#new-assignment-semantics}
 
@@ -227,7 +243,7 @@ $= \false$.
 This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible][] is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS][] 19.4):
 
 > An interface type $T$ may be assigned to a type $S$, written  $T \Longleftrightarrow S$, iff either $T \subtype S$ or $S \subtype T$. 
-> _This rule may surprise readers accustomed to conventional typechecking. The intent of the $\Longleftrightarrow$ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work._
+> _This rule may surprise readers accustomed to conventional type checking. The intent of the $\Longleftrightarrow$ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work._
 
 In the spirit of the commentary, we redefine "[assignment compatible][]" as follows: if $T$ and $S$ are non-null types, then the definition is as in [DartC][]. Otherwise, suppose $T$ is the nullable union type $\qn{}U$, then $\qn{}U$ and $S$ are assignment compatible iff $S$ is assignment compatible with `Null` _or_ with $U$. I.e., $\qn{}U \Longleftrightarrow S$ iff
 
@@ -255,7 +271,7 @@ This applies to function types as well.
 
 ### B.3.8 Type least upper bound {#lub}
 
-The least upperbound of `Null` and any non-`void` type *T* is ?*T*.
+The least upper bound of `Null` and any non-`void` type *T* is ?*T*.
 
 ### B.3.9 Null-aware operators {#null-awareoperators}
 
