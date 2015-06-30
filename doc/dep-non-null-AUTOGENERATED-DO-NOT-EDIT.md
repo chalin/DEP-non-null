@@ -1,6 +1,6 @@
 # Dart DEP #30: Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-06-29 (0.6.2) - [revision history](#revision-history)
+#### 2015-06-30 (0.6.3) - [revision history](#revision-history)
 
 -   [DEP \#30: Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -733,7 +733,10 @@ This proposal does not *require* union types. In the absence of union types we c
 -   ?`Null` = `Null` (fixed point),
 -   ?`dynamic` = `dynamic` (fixed point, [D.2.1](#dynamic-and-type-operators)).
 
-These last three equations are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)).
+These last three equations are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)). When ?*V* and ?*U* are in normal form, then:
+
+-   ?*V* \<\< *S* **iff** `Null` \<\< *S* or *V* \<\< *S*.
+-   *T* \<\< ?*U* only if *T* \<\< `Null` and *T* \<\< *U*.
 
 It is a compile-time error if `?` is applied to `void`. It is a [static warning](#terms "A problem reported by the static checker") if an occurrence of ?*T* is not in normal form.
 
@@ -819,7 +822,7 @@ According to the [DartC](#terms "Classic (i.e., current) Dart") definition of [a
 class C<T extends B> { T o = s; }
 ```
 
-where `s` is some expression of type *S*. Let us write *T<sup>B</sup>* to represent that the type parameter *T* has upper bound *B*. The assignment to `o` is valid if *S* is [assignment compatible](#assignment-compatible) with *T*, i.e., *S ⟺ T<sup>B</sup>* (by definition of ⟺). But *T<sup>B</sup>* is incomparable when it is not instantiated. The best we can do is compare *S* to *B* and try to establish that *B \<: S*. Thus, *S ⟺ T<sup>B</sup>*
+where `s` is some expression of type *S*. Let us write *T<sup>B</sup>* to represent that the type parameter *T* has upper bound *B*. The assignment to `o` is valid if *S* is [assignment compatible](#assignment-compatible) with *T<sup>B</sup>*, written *S ⟺ T<sup>B</sup>*. But *T<sup>B</sup>* is incomparable when it is not instantiated. The best we can do is compare *S* to *B* and try to establish that *B \<: S*. Thus, *S ⟺ T<sup>B</sup>*
 
 *= S \<: T<sup>B</sup> ∨ T<sup>B</sup> \<: S* (by definition of ⟺) <br/>
 *⟸ S \<: T<sup>B</sup> ∨ T<sup>B</sup> \<: B ∧ B \<: S* <br/>
@@ -844,11 +847,15 @@ This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it sh
 
 > An interface type *T* may be assigned to a type *S*, written *T ⟺ S*, iff either *T \<: S* or *S \<: T*. *This rule may surprise readers accustomed to conventional type checking. The intent of the ⟺ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work.*
 
-In the spirit of the commentary, we redefine “[assignment compatible](#assignment-compatible)” as follows: if *T* and *S* are non-null types, then the definition is as in [DartC](#terms "Classic (i.e., current) Dart"). Otherwise, suppose *T* is the nullable union type *?U*, then *?U* and *S* are assignment compatible iff *S* is assignment compatible with `Null` *or* with *U*. I.e., *?U ⟺ S* iff
+In the spirit of the commentary, we refine the definition of “[assignment compatible](#assignment-compatible)” as follows: let *T*, *S*, *V* and *U* be any types such that *?V* and *?U* are in normal form, then we define *T ⟺ S* by cases:
 
-*Null ⟺ S ∨ U ⟺ S*.
+-   *T ⟺ ?U* **iff** *T ⟺ Null ∨ T ⟺ U*, when *T* is *not* of the form *?V*
 
-If we expand this new definition, we end up with the formula (\*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible](#assignment-compatible), `i2` can be initialized with an `int` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics").
+Otherwise the [DartC](#terms "Classic (i.e., current) Dart") definition holds; i.e., *T ⟺ S* iff *T \<: S ∨ S \<: T*.
+
+> Comment. It follows that *?V ⟺ ?U* iff *V ⟺ U*. An equivalent redefinition is: *T ⟺ S* **iff** *T \<: S ∨ S \<: T ∨ S = ?U ∧ U \<: T* (for some *U*).
+
+If we expand this new definition for arguments *?V* and *S*, we end up with the formula (\*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible](#assignment-compatible), `i2` can be initialized with an `int` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics").
 
 <a name="multi-members"></a>
 ### B.3.6 Static semantics of members of ?T
@@ -2028,7 +2035,7 @@ The [NNBD](#part-nnbd "Non-Null By Default")-enabled analyzer sources are in the
 
 As of the time of writing, the [Dart Analyzer](https://www.dartlang.org/tools/analyzer) code change footprint (presented as a git diff summary) is:
 
-    Showing  8 changed files  with 245 additions and 35 deletions.
+    Showing  9 changed files  with 245 additions and 35 deletions.
     +3   −2   pkg/analyzer/lib/src/generated/ast.dart
     +5   −3   pkg/analyzer/lib/src/generated/constant.dart
     +40  −5   pkg/analyzer/lib/src/generated/element.dart

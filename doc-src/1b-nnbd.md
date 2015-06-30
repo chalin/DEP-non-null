@@ -139,7 +139,10 @@ This proposal does not *require* union types. In the absence of union types we c
 - ?`Null` = `Null` (fixed point),
 - ?`dynamic` = `dynamic` (fixed point, [D.2.1](#dynamic-and-type-operators)).
 
-These last three equations are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)).
+These last three equations are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)). When ?*V* and ?*U* are in  normal form, then:
+
+- ?*V* << *S* **iff** `Null` << *S* or *V* << *S*.
+- *T* << ?*U* only if *T* << `Null` and *T* << *U*.
 
 It is a compile-time error if `?` is applied to `void`.
 It is a [static warning][] if an occurrence of ?*T* is not in normal form.
@@ -219,37 +222,41 @@ According to the [DartC][] definition of [assignment compatible][] described in 
 class C<T extends B> { T o = s; }
 ```
 
-where `s` is some expression of type $S$. Let us write $T^B$ to represent that the type parameter $T$ has upper bound $B$. The assignment to `o` is valid if $S$ is [assignment compatible][] with $T$, i.e., $S \Longleftrightarrow T^B$ (by definition of $\Longleftrightarrow$). But $T^B$ is incomparable when it is not instantiated. The best we can do is compare $S$ to $B$ and try to establish that $B \subtype S$. Thus, $S \Longleftrightarrow T^B$
+where `s` is some expression of type $S$. Let us write $T^B$ to represent that the type parameter $T$ has upper bound $B$. The assignment to `o` is valid if $S$ is [assignment compatible][] with $T^B$, written $S \asgn T^B$. But $T^B$ is incomparable when it is not instantiated. The best we can do is compare $S$ to $B$ and try to establish that $B \subtype S$. Thus, $S \asgn T^B$
 
-$= S \subtype T^B \lor T^B \subtype S$ (by definition of $\Longleftrightarrow$) <br/> \
+$= S \subtype T^B \lor T^B \subtype S$ (by definition of $\asgn$) <br/> \
 $\impliedby S \subtype T^B \lor T^B \subtype B \land B \subtype S$ <br/> \
 $= S \subtype T^B \lor B \subtype S$ (simplified because $B$ is the upper bound of $T^B$).
 
-where $\impliedby$ is reverse implication. In the case of class `C2` above, the field `i2` is of type ?`T2`, hence we are dealing with the general case: $S \Longleftrightarrow \qn{}T^B$
+where $\impliedby$ is reverse implication. In the case of class `C2` above, the field `i2` is of type ?`T2`, hence we are dealing with the general case: $S \asgn \nut{T^B}$
 
-$= S \subtype \qn{}T^B \lor \qn{}T^B \subtype S$ (by definition of $\Longleftrightarrow$) <br/> \
-$= S \subtype Null \lor S \subtype T^B \lor \qn{}T^B \subtype S$ (property of ?) <br/> \
-$= S \subtype Null \lor S \subtype T^B \lor (Null \subtype S \land T^B \subtype S)$ (property of ?) <br/> \
-$\impliedby S \subtype Null \lor S \subtype T^B \lor (Null \subtype S \land T^B \subtype B \land B \subtype S)$ <br/> \
-$= S \subtype Null \lor S \subtype T^B \lor (Null \subtype S \land B \subtype S)$. (*)
+$= S \subtype \nut{T^B} \lor \nut{T^B} \subtype S$ (by definition of $\asgn$) <br/> \
+$= S \subtype \pg{Null} \lor S \subtype T^B \lor \nut{T^B} \subtype S$ (property of ?) <br/> \
+$= S \subtype \pg{Null} \lor S \subtype T^B \lor (\pg{Null} \subtype S \land T^B \subtype S)$ (property of ?) <br/> \
+$\impliedby S \subtype \pg{Null} \lor S \subtype T^B \lor (\pg{Null} \subtype S \land T^B \subtype B \land B \subtype S)$ <br/> \
+$= S \subtype \pg{Null} \lor S \subtype T^B \lor (\pg{Null} \subtype S \land B \subtype S)$. (*)
 
 If we substitute the type of `i2` and the bound of `T2` for $S$ and $B$ in (*) and we get:
 
-$\inttype \subtype Null \lor \inttype \subtype T^{\inttype} \lor (Null \subtype \inttype \land \inttype \subtype \inttype)$ <br/> \
-$= \false \lor \inttype \subtype T^{\inttype} \lor (\false \land \true)$ <br/> \
-$= \inttype \subtype T^{\inttype} \lor \false$ <br/> \
-$= \false$.
+$\pg{int} \subtype \pg{Null} \lor \pg{int} \subtype T^{\pg{int}} \lor (\pg{Null} \subtype \pg{int} \land \pg{int} \subtype \pg{int})$ <br/> \
+$= \pg{false} \lor \pg{int} \subtype T^{\pg{int}} \lor (\pg{false} \land \pg{true})$ <br/> \
+$= \pg{int} \subtype T^{\pg{int}} \lor \pg{false}$ <br/> \
+$= \pg{false}$.
 
 This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible][] is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS][] 19.4):
 
-> An interface type $T$ may be assigned to a type $S$, written  $T \Longleftrightarrow S$, iff either $T \subtype S$ or $S \subtype T$. 
-> _This rule may surprise readers accustomed to conventional type checking. The intent of the $\Longleftrightarrow$ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work._
+> An interface type $T$ may be assigned to a type $S$, written  $T \asgn S$, iff either $T \subtype S$ or $S \subtype T$. 
+> _This rule may surprise readers accustomed to conventional type checking. The intent of the $\asgn$ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work._
 
-In the spirit of the commentary, we redefine "[assignment compatible][]" as follows: if $T$ and $S$ are non-null types, then the definition is as in [DartC][]. Otherwise, suppose $T$ is the nullable union type $\qn{}U$, then $\qn{}U$ and $S$ are assignment compatible iff $S$ is assignment compatible with `Null` _or_ with $U$. I.e., $\qn{}U \Longleftrightarrow S$ iff
+In the spirit of the commentary, we refine the definition of "[assignment compatible][]" as follows: let $T$, $S$, $V$ and $U$ be any types such that $\nut{V}$ and $\nut{U}$ are in normal form, then we define $T \asgn S$ by cases:
 
-$Null \Longleftrightarrow S \lor U \Longleftrightarrow S$.
+- $T \asgn \nut{U}$ **iff** $T \asgn \pg{Null} \lor T \asgn U$, when $T$ is *not* of the form $\nut{V}$
 
-If we expand this new definition, we end up with the formula (*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible][], `i2` can be initialized with an `int` in [DartNNBD][].
+Otherwise the [DartC][] definition holds; i.e., $T \asgn S$ iff $T \subtype S \lor S \subtype T$.
+
+> Comment. It follows that $\nut{V} \asgn \nut{U}$ iff $V \asgn U$. An equivalent redefinition is: $T \asgn S$ **iff** $T \subtype S \lor S \subtype T \lor S = \nut{U} \land U \subtype T$ (for some $U$).
+
+If we expand this new definition for arguments $\nut{V}$ and $S$, we end up with the formula (*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible][], `i2` can be initialized with an `int` in [DartNNBD][].
 
 ### B.3.6 Static semantics of members of ?T {#multi-members}
 

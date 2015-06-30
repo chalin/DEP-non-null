@@ -71,7 +71,10 @@ function action(type, value, format, meta) {
     if (optMd && type === 'Math') {
         var mathText = value[1]
             .replace(/\\cd{([^}]+)}/g, '$1')
+            .replace(/\\pg{([^}]+)}/g, '$1')
+            .replace(/\\nut{([^}]+)}/g, '?$1')
             .replace(/\\bot\b/g, '⊥')
+            .replace(/\\asgn\b/g, '⟺')
             .replace(/\\Longleftrightarrow\b/g, '⟺')
             .replace(/\\DYNAMIC\b/g, 'dynamic')
             .replace(/\\ldots\b/g, '...')

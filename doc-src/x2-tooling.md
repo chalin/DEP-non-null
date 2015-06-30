@@ -65,7 +65,7 @@ The [NNBD][]-enabled analyzer sources are in the author's GitHub Dart SDK fork @
 As of the time of writing, the [Dart Analyzer][] code change footprint (presented as a git diff summary) is:
 
 ```
-Showing  8 changed files  with 245 additions and 35 deletions.
+Showing  9 changed files  with 245 additions and 35 deletions.
 +3   −2   pkg/analyzer/lib/src/generated/ast.dart
 +5   −3   pkg/analyzer/lib/src/generated/constant.dart
 +40  −5   pkg/analyzer/lib/src/generated/element.dart
