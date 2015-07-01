@@ -1,6 +1,6 @@
 # Dart DEP #30: Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-07-01 (0.6.4) - [revision history](#revision-history)
+#### 2015-07-01 (0.6.5) - [revision history](#revision-history)
 
 -   [DEP \#30: Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -849,7 +849,9 @@ This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it sh
 In the spirit of the commentary, we refine the definition of “[assignment compatible](#assignment-compatible)” as follows: let *T*, *S*, *V* and *U* be any types such that *?V* and *?U* are in normal form, then we define ⟺ by cases:
 
 -   *T ⟺ ?U* **iff** *T ⟺ Null ∨ T ⟺ U*, when *T* is *not* of the form *?V*
--   Otherwise the [DartC](#terms "Classic (i.e., current) Dart") definition holds; i.e., *T ⟺ S* iff *T \<: S ∨ S \<: T*.
+-   *?V ⟺ S* **iff** *Null ⟺ S ∨ V ⟺ S*, when *S* is *not* of the form *?U*
+-   Otherwise the [DartC](#terms "Classic (i.e., current) Dart") definition holds; i.e., <br/>
+     *T ⟺ S* **iff** *T \<: S ∨ S \<: T*.
 
 > Comment. It follows that *?V ⟺ ?U* iff *V ⟺ U*. An equivalent redefinition is: <br/>
 > *T ⟺ S* **iff** *T \<: S ∨ S \<: T ∨ S = ?U ∧ U \<: T* (for some *U*).

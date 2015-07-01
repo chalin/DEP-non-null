@@ -249,8 +249,12 @@ This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it sh
 
 In the spirit of the commentary, we refine the definition of "[assignment compatible][]" as follows: let $T$, $S$, $V$ and $U$ be any types such that $\nut{V}$ and $\nut{U}$ are in normal form, then we define $\asgn$ by cases:
 
-- $T \asgn \nut{U}$ **iff** $T \asgn \pg{Null} \lor T \asgn U$, when $T$ is *not* of the form $\nut{V}$
-- Otherwise the [DartC][] definition holds; i.e., $T \asgn S$ iff $T \subtype S \lor S \subtype T$.
+- $T \asgn \nut{U}$
+  **iff** $T \asgn \pg{Null} \lor T \asgn U$, when $T$ is *not* of the form $\nut{V}$
+- $\nut{V} \asgn S$
+  **iff** $\pg{Null} \asgn S \lor V \asgn S$, when $S$ is *not* of the form $\nut{U}$
+- Otherwise the [DartC][] definition holds; i.e., <br/> \
+  $T \asgn S$ **iff** $T \subtype S \lor S \subtype T$.
 
 > Comment. It follows that $\nut{V} \asgn \nut{U}$ iff $V \asgn U$. An equivalent redefinition is: <br/> \
 > $T \asgn S$ **iff** $T \subtype S \lor S \subtype T \lor S = \nut{U} \land U \subtype T$ (for some $U$).
