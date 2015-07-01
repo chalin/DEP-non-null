@@ -1,6 +1,6 @@
 # Dart DEP #30: Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-06-30 (0.6.3) - [revision history](#revision-history)
+#### 2015-07-01 (0.6.4) - [revision history](#revision-history)
 
 -   [DEP \#30: Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -735,8 +735,7 @@ This proposal does not *require* union types. In the absence of union types we c
 
 These last three equations are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)). When ?*V* and ?*U* are in normal form, then:
 
--   ?*V* \<\< *S* **iff** `Null` \<\< *S* or *V* \<\< *S*.
--   *T* \<\< ?*U* only if *T* \<\< `Null` and *T* \<\< *U*.
+-   ?*V* \<\< *S* **iff** `Null` \<\< *S* ∧ *V* \<\< *S*.
 
 It is a compile-time error if `?` is applied to `void`. It is a [static warning](#terms "A problem reported by the static checker") if an occurrence of ?*T* is not in normal form.
 
@@ -828,7 +827,7 @@ where `s` is some expression of type *S*. Let us write *T<sup>B</sup>* to repres
 *⟸ S \<: T<sup>B</sup> ∨ T<sup>B</sup> \<: B ∧ B \<: S* <br/>
 *= S \<: T<sup>B</sup> ∨ B \<: S* (simplified because *B* is the upper bound of *T<sup>B</sup>*).
 
-where *⟸* is reverse implication. In the case of class `C2` above, the field `i2` is of type ?`T2`, hence we are dealing with the general case: *S ⟺ ?T<sup>B</sup>*
+where ⟸ is reverse implication. In the case of class `C2` above, the field `i2` is of type ?`T2`, hence we are dealing with the general case: *S ⟺ ?T<sup>B</sup>*
 
 *= S \<: ?T<sup>B</sup> ∨ ?T<sup>B</sup> \<: S* (by definition of ⟺) <br/>
 *= S \<: Null ∨ S \<: T<sup>B</sup> ∨ ?T<sup>B</sup> \<: S* (property of ?) <br/>
@@ -847,13 +846,13 @@ This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it sh
 
 > An interface type *T* may be assigned to a type *S*, written *T ⟺ S*, iff either *T \<: S* or *S \<: T*. *This rule may surprise readers accustomed to conventional type checking. The intent of the ⟺ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work.*
 
-In the spirit of the commentary, we refine the definition of “[assignment compatible](#assignment-compatible)” as follows: let *T*, *S*, *V* and *U* be any types such that *?V* and *?U* are in normal form, then we define *T ⟺ S* by cases:
+In the spirit of the commentary, we refine the definition of “[assignment compatible](#assignment-compatible)” as follows: let *T*, *S*, *V* and *U* be any types such that *?V* and *?U* are in normal form, then we define ⟺ by cases:
 
 -   *T ⟺ ?U* **iff** *T ⟺ Null ∨ T ⟺ U*, when *T* is *not* of the form *?V*
+-   Otherwise the [DartC](#terms "Classic (i.e., current) Dart") definition holds; i.e., *T ⟺ S* iff *T \<: S ∨ S \<: T*.
 
-Otherwise the [DartC](#terms "Classic (i.e., current) Dart") definition holds; i.e., *T ⟺ S* iff *T \<: S ∨ S \<: T*.
-
-> Comment. It follows that *?V ⟺ ?U* iff *V ⟺ U*. An equivalent redefinition is: *T ⟺ S* **iff** *T \<: S ∨ S \<: T ∨ S = ?U ∧ U \<: T* (for some *U*).
+> Comment. It follows that *?V ⟺ ?U* iff *V ⟺ U*. An equivalent redefinition is: <br/>
+> *T ⟺ S* **iff** *T \<: S ∨ S \<: T ∨ S = ?U ∧ U \<: T* (for some *U*).
 
 If we expand this new definition for arguments *?V* and *S*, we end up with the formula (\*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible](#assignment-compatible), `i2` can be initialized with an `int` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics").
 

@@ -90,7 +90,7 @@ function action(type, value, format, meta) {
             .replace(/\\botObject\b/g, '⊥_Object') // x~subscript~
             .replace(/{}/g, '')
         ;
-        return (mathText === '⊥' || mathText === '⟺')
+        return (mathText.match(/^[^a-zA-Z]$/)) // don't emph lone non-letter symbols like ⊥
             ? Str(mathText)
             : pandoc.Emph([Str(mathText)]);
     }

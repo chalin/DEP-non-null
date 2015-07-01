@@ -141,8 +141,7 @@ This proposal does not *require* union types. In the absence of union types we c
 
 These last three equations are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)). When ?*V* and ?*U* are in  normal form, then:
 
-- ?*V* << *S* **iff** `Null` << *S* or *V* << *S*.
-- *T* << ?*U* only if *T* << `Null` and *T* << *U*.
+- ?*V* << *S*  **iff**  `Null` << *S*  $\land$  *V* << *S*.
 
 It is a compile-time error if `?` is applied to `void`.
 It is a [static warning][] if an occurrence of ?*T* is not in normal form.
@@ -248,13 +247,13 @@ This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it sh
 > An interface type $T$ may be assigned to a type $S$, written  $T \asgn S$, iff either $T \subtype S$ or $S \subtype T$. 
 > _This rule may surprise readers accustomed to conventional type checking. The intent of the $\asgn$ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work._
 
-In the spirit of the commentary, we refine the definition of "[assignment compatible][]" as follows: let $T$, $S$, $V$ and $U$ be any types such that $\nut{V}$ and $\nut{U}$ are in normal form, then we define $T \asgn S$ by cases:
+In the spirit of the commentary, we refine the definition of "[assignment compatible][]" as follows: let $T$, $S$, $V$ and $U$ be any types such that $\nut{V}$ and $\nut{U}$ are in normal form, then we define $\asgn$ by cases:
 
 - $T \asgn \nut{U}$ **iff** $T \asgn \pg{Null} \lor T \asgn U$, when $T$ is *not* of the form $\nut{V}$
+- Otherwise the [DartC][] definition holds; i.e., $T \asgn S$ iff $T \subtype S \lor S \subtype T$.
 
-Otherwise the [DartC][] definition holds; i.e., $T \asgn S$ iff $T \subtype S \lor S \subtype T$.
-
-> Comment. It follows that $\nut{V} \asgn \nut{U}$ iff $V \asgn U$. An equivalent redefinition is: $T \asgn S$ **iff** $T \subtype S \lor S \subtype T \lor S = \nut{U} \land U \subtype T$ (for some $U$).
+> Comment. It follows that $\nut{V} \asgn \nut{U}$ iff $V \asgn U$. An equivalent redefinition is: <br/> \
+> $T \asgn S$ **iff** $T \subtype S \lor S \subtype T \lor S = \nut{U} \land U \subtype T$ (for some $U$).
 
 If we expand this new definition for arguments $\nut{V}$ and $S$, we end up with the formula (*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible][], `i2` can be initialized with an `int` in [DartNNBD][].
 
