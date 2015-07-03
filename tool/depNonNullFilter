@@ -68,32 +68,46 @@ function action(type, value, format, meta) {
         ];
     }
     
+    if (optMd && type === 'RawInline') {
+        var rawText = value[1];
+        var text = replaceLatex(rawText);
+        return rawText === text
+            ? undefined // don't change the value
+            : Str(text);
+    }
+
     if (optMd && type === 'Math') {
-        var mathText = value[1]
-            .replace(/\\cd{([^}]+)}/g, '$1')
-            .replace(/\\pg{([^}]+)}/g, '$1')
-            .replace(/\\nut{([^}]+)}/g, '?$1')
-            .replace(/\\bot\b/g, '⊥')
-            .replace(/\\asgn\b/g, '⟺')
-            .replace(/\\Longleftrightarrow\b/g, '⟺')
-            .replace(/\\DYNAMIC\b/g, 'dynamic')
-            .replace(/\\ldots\b/g, '...')
-            .replace(/\\le\b/g, '≤')
-            .replace(/\\subtype\b/g, '<:')
-            .replace(/\\qn\b/g, '?')
-            .replace(/\\land\b/g, '∧')
-            .replace(/\\lor\b/g, '∨')
-            .replace(/\\impliedby\b/g, '⟸') // ⇐
-            .replace(/\\inttype\b/g, 'int')
-            .replace(/\\true\b/g, 'true')
-            .replace(/\\false\b/g, 'false')
-            .replace(/\\botObject\b/g, '⊥_Object') // x~subscript~
-            .replace(/{}/g, '')
-        ;
+        var mathText = replaceLatex(value[1]);
         return (mathText.match(/^[^a-zA-Z]$/)) // don't emph lone non-letter symbols like ⊥
             ? Str(mathText)
             : pandoc.Emph([Str(mathText)]);
     }
+}
+
+function replaceLatex(rawLatex) {
+    return rawLatex
+        .replace(/\\cd{([^}]+)}/g, '$1')
+        .replace(/\\pg{([^}]+)}/g, '$1')
+        .replace(/\\nut{([^}]+)}/g, '?$1')
+        .replace(/\\bot\b/g, '⊥')
+        .replace(/\\asgn\b/g, '⟺')
+        .replace(/\\Longleftrightarrow\b/g, '⟺')
+        .replace(/\\DYNAMIC\b/g, 'dynamic')
+        .replace(/\\ldots\b/g, '...')
+        .replace(/\\le\b/g, '≤')
+        .replace(/\\subtype\b/g, '<:')
+        .replace(/\\mst\b/g, '<<')
+        .replace(/\\qn\b/g, '?')
+        .replace(/\\land\b/g, '∧')
+        .replace(/\\lor\b/g, '∨')
+        .replace(/\\lnot\b/g, '¬')
+        .replace(/\\impliedby\b/g, '⟸') // ⇐
+        .replace(/\\inttype\b/g, 'int')
+        .replace(/\\true\b/g, 'true')
+        .replace(/\\false\b/g, 'false')
+        .replace(/\\botObject\b/g, '⊥_Object') // x~subscript~
+        .replace(/{}/g, '')
+    ;
 }
 
 pandoc.stdio(action);

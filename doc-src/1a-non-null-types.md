@@ -78,17 +78,17 @@ Let *S* and *T* be types.
 - *T* is a _subtype_ of *S*, written $T <: S$, iff $[\bot/\DYNAMIC{}]T << S$.
 
 + $T$ is _more specific than_ $S$, written $T << S$, if one of the following conditions is met:
-    - $T$ is $S$.
-    - T is $\bot$.
-    - S is \DYNAMIC{}.
-    - $S$ is a direct supertype of $T$.
-    - $T$ is a type parameter and $S$ is the upper bound of $T$.
-    - $T$ is a type parameter and $S$ is \cd{Object}.
-    - $T$ is of the form $I<T_1, \ldots, T_n>$ and $S$ is of the form $I<S_1, \ldots, S_n>$ and:
+    1. $T$ is $S$.
+    2. T is $\bot$.
+    3. S is \DYNAMIC{}.
+    4. $S$ is a direct supertype of $T$.
+    5. $T$ is a type parameter and $S$ is the upper bound of $T$.
+    6. $T$ is a type parameter and $S$ is \cd{Object}.
+    7. $T$ is of the form $I<T_1, \ldots, T_n>$ and $S$ is of the form $I<S_1, \ldots, S_n>$ and:
 $T_i << S_i, 1 \le i \le n$
-    - $T$ and $S$ are both function types, and $T << S$ under the rules of [DSS][] 19.5.
-    - $T$ is a function type and $S$ is \cd{Function}.
-    - $T << U$ and $U << S$.
+    8. $T$ and $S$ are both function types, and $T << S$ under the rules of [DSS][] 19.5.
+    9. $T$ is a function type and $S$ is \cd{Function}.
+    10. $T << U$ and $U << S$.
 
 ## A.2 Feature details: recovering non-null types {#non-null-types}
 

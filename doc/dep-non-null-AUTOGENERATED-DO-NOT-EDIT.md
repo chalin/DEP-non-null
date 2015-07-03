@@ -1,6 +1,6 @@
 # Dart DEP #30: Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-07-01 (0.6.5) - [revision history](#revision-history)
+#### 2015-07-03 (0.6.6) - [revision history](#revision-history)
 
 -   [DEP \#30: Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -43,7 +43,7 @@
     -   [B.3 Semantics](#nnbd-semantics)
         -   [B.3.1 Semantics of `?`](#semantics-of-maybe)
             -   [(a) Union type interoperability](#uti)
-            -   [(b) Core properties of `?`](#b-core-properties-of)
+            -   [(b) Core properties of `?`](#semantics-of-q)
         -   [B.3.2 Semantics of `!`](#semantics-of-bang)
         -   [B.3.3 Runtime representation of type operators and other shared semantics](#shared-type-op-semantics)
         -   [B.3.4 Default initialization of non-null variables is like](#var-init)[DartC](#terms "Classic (i.e., current) Dart")
@@ -516,16 +516,16 @@ We reproduce here the definitions of essential binary relations over Dart types 
 -   *T* is a *subtype* of *S*, written *T \<: S*, iff *[⊥/dynamic]T \<\< S*.
 
 -   *T* is *more specific than* *S*, written *T \<\< S*, if one of the following conditions is met:
-    -   *T* is *S*.
-    -   T is ⊥.
-    -   S is .
-    -   *S* is a direct supertype of *T*.
-    -   *T* is a type parameter and *S* is the upper bound of *T*.
-    -   *T* is a type parameter and *S* is .
-    -   *T* is of the form *I\<T\_1, ..., T\_n\>* and *S* is of the form *I\<S\_1, ..., S\_n\>* and: *T\_i \<\< S\_i, 1 ≤ i ≤ n*
-    -   *T* and *S* are both function types, and *T \<\< S* under the rules of [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.5.
-    -   *T* is a function type and *S* is .
-    -   *T \<\< U* and *U \<\< S*.
+    1.  *T* is *S*.
+    2.  T is ⊥.
+    3.  S is dynamic.
+    4.  *S* is a direct supertype of *T*.
+    5.  *T* is a type parameter and *S* is the upper bound of *T*.
+    6.  *T* is a type parameter and *S* is Object.
+    7.  *T* is of the form *I\<T\_1, ..., T\_n\>* and *S* is of the form *I\<S\_1, ..., S\_n\>* and: *T\_i \<\< S\_i, 1 ≤ i ≤ n*
+    8.  *T* and *S* are both function types, and *T \<\< S* under the rules of [DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.5.
+    9.  *T* is a function type and *S* is Function.
+    10. *T \<\< U* and *U \<\< S*.
 
 <a name="non-null-types"></a>
 ## A.2 Feature details: recovering non-null types
@@ -721,21 +721,25 @@ The semantics of `?` then follow naturally from this definition. While the Dart 
 
 From such a semantics it follows that, e.g., `Null <: ?T` and `T <: ?T` for any *T*.
 
-<a name="b-core-properties-of"></a>
+<a name="semantics-of-q"></a>
 #### (b) Core properties of `?`
 
-This proposal does not *require* union types. In the absence of union types we characterize `?` by its core properties. For any type *T*
+This proposal does not *require* union types. In the absence of union types we characterize `?` by its core properties. For any types *T* and *S* that are not `void`:
 
--   `Null` and *T* are *more specific* than ?*T* ([A.1.4](#def-subtype)):
+1.  `Null` and *T* are *more specific* than ?*T* ([A.1.4](#def-subtype)):
     -   `Null` \<\< ?*T*,
     -   *T* \<\< ?*T*;
--   ??*T* = ?*T* (idempotence),
--   ?`Null` = `Null` (fixed point),
--   ?`dynamic` = `dynamic` (fixed point, [D.2.1](#dynamic-and-type-operators)).
 
-These last three equations are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)). When ?*V* and ?*U* are in normal form, then:
+2.  ??*T* = ?*T* (idempotence),
+3.  ?`Null` = `Null` (fixed point),
+4.  ?`dynamic` = `dynamic` (fixed point, [D.2.1](#dynamic-and-type-operators)).
+5.  ?*T* \<\< *S* **iff** `Null` \<\< *S* ∧ *T* \<\< *S*.
+6.  *T* \<\< ?*S* ∧ ¬(`Null` \<\< *T*) implies *T* \<\< *S*.
 
--   ?*V* \<\< *S* **iff** `Null` \<\< *S* ∧ *V* \<\< *S*.
+Equations 2 to 4 are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)).
+
+> Comment. It follows from (1) that <br/>
+> *T* \<\< ?*S* **if** *T* \<\< `Null` ∨ *T* \<\< *S*.
 
 It is a compile-time error if `?` is applied to `void`. It is a [static warning](#terms "A problem reported by the static checker") if an occurrence of ?*T* is not in normal form.
 
@@ -810,53 +814,60 @@ A class or library variable that is (1) `const` or `final`, or (2) declared non-
 Consider the following [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics") code:
 
 ``` java
-?int i = 1; // ok
-class C1<T1 extends int> { T1 i1 = 1; } // ok
-class C2<T2 extends int> { ?T2 i2 = 1; } // should be ok
+?int i = 1.0; // ok
+class C<T extends int> {
+   T i1 = 1.0; // ok
+  ?T i2 = 1.0; // should be ok
+}
 ```
 
-According to the [DartC](#terms "Classic (i.e., current) Dart") definition of [assignment compatible](#assignment-compatible) described in [A.1.4](#def-subtype), a [static warning](#terms "A problem reported by the static checker") should be reported for the initialization of `i2`. To understand why, let us examine the general case of
+The assignment of `1.0` to `i1` is valid because *num ⟺ T<sup>int</sup>*
 
-``` java
-class C<T extends B> { T o = s; }
-```
+*= num \<: T<sup>int</sup> ∨ T<sup>int</sup> \<: num*, by def. ⟺ <br/>
+*= [⊥/dynamic]num \<\< T<sup>int</sup> ∨ [⊥/dynamic]T<sup>int</sup> \<\< num*, by def. *\<:* <br/>
+*= num \<\< T<sup>int</sup> ∨ T<sup>int</sup> \<\< num*, by simplification. <br/>
+*⟸ T<sup>int</sup> \<\< num*, by disjunction introduction. <br/>
+*= T<sup>int</sup> \<\< int ∧ int \<\< num*, by transitivity. <br/>
+*= true ∧ int \<\< num*, by [A.1.4](#def-subtype) `<<` (5). <br/>
+*= true ∧ true*, by [A.1.4](#def-subtype) `<<` (4). <br/>
+*= true*.
 
-where `s` is some expression of type *S*. Let us write *T<sup>B</sup>* to represent that the type parameter *T* has upper bound *B*. The assignment to `o` is valid if *S* is [assignment compatible](#assignment-compatible) with *T<sup>B</sup>*, written *S ⟺ T<sup>B</sup>*. But *T<sup>B</sup>* is incomparable when it is not instantiated. The best we can do is compare *S* to *B* and try to establish that *B \<: S*. Thus, *S ⟺ T<sup>B</sup>*
+On the other hand, according to the [DartC](#terms "Classic (i.e., current) Dart") definition of [assignment compatible](#assignment-compatible) described in [A.1.4](#def-subtype), a [static warning](#terms "A problem reported by the static checker") should be reported for the initialization of `i2` since `num` is not [assignment compatible](#assignment-compatible) with `?T`. Here is the derivation of *num ⟺ ?T<sup>int</sup>*
 
-*= S \<: T<sup>B</sup> ∨ T<sup>B</sup> \<: S* (by definition of ⟺) <br/>
-*⟸ S \<: T<sup>B</sup> ∨ T<sup>B</sup> \<: B ∧ B \<: S* <br/>
-*= S \<: T<sup>B</sup> ∨ B \<: S* (simplified because *B* is the upper bound of *T<sup>B</sup>*).
+*= num \<: ?T<sup>int</sup> ∨ ?T<sup>int</sup> \<: num*, by def. ⟺ <br/>
+*= [⊥/dynamic]num \<\< ?T<sup>int</sup> ∨ [⊥/dynamic]?T<sup>int</sup> \<\< num*, by def. *\<:* <br/>
+*= num \<\< ?T<sup>int</sup> ∨ ?T<sup>int</sup> \<\< num*, by simplification.
 
-where ⟸ is reverse implication. In the case of class `C2` above, the field `i2` is of type ?`T2`, hence we are dealing with the general case: *S ⟺ ?T<sup>B</sup>*
+Let us refer to the disjuncts as (L) and (R). We prove (L) by contradiction:
 
-*= S \<: ?T<sup>B</sup> ∨ ?T<sup>B</sup> \<: S* (by definition of ⟺) <br/>
-*= S \<: Null ∨ S \<: T<sup>B</sup> ∨ ?T<sup>B</sup> \<: S* (property of ?) <br/>
-*= S \<: Null ∨ S \<: T<sup>B</sup> ∨ (Null \<: S ∧ T<sup>B</sup> \<: S)* (property of ?) <br/>
-*⟸ S \<: Null ∨ S \<: T<sup>B</sup> ∨ (Null \<: S ∧ T<sup>B</sup> \<: B ∧ B \<: S)* <br/>
-*= S \<: Null ∨ S \<: T<sup>B</sup> ∨ (Null \<: S ∧ B \<: S)*. (\*)
+*num \<\< ?T<sup>int</sup>*, by assumption. <br/>
+*= num \<\< ?T<sup>int</sup> ∧ ¬(Null \<\< num)*, property of `num`. <br/>
+*= num \<\< T<sup>int</sup>*, by [B.3.1.b](#semantics-of-q) (6). <br/>
+*= num \<\< T<sup>int</sup> ∧ T<sup>int</sup> \<\< int*, by ([A.1.4](#def-subtype) `<<` (5)) <br/>
+*= num \<\< int*, by transitivity.
 
-If we substitute the type of `i2` and the bound of `T2` for *S* and *B* in (\*) and we get:
+Which is false, hence our original assumption (L) was false. Now for (R):
 
-*int \<: Null ∨ int \<: T<sup>int</sup> ∨ (Null \<: int ∧ int \<: int)* <br/>
-*= false ∨ int \<: T<sup>int</sup> ∨ (false ∧ true)* <br/>
-*= int \<: T<sup>int</sup> ∨ false* <br/>
+*?T<sup>int</sup> \<\< num* <br/>
+*= Null \<\< num ∧ T<sup>int</sup> \<\< num*, by [B.3.1.b](#semantics-of-q) (5). <br/>
+*= false ∧ T<sup>int</sup> \<\< num*, property of `num`. <br/>
 *= false*.
 
-This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible](#assignment-compatible) is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.4):
+Hence `num` is not assignable to `?T`. This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `num` to it. The problem is that the definition of [assignment compatible](#assignment-compatible) is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.4):
 
 > An interface type *T* may be assigned to a type *S*, written *T ⟺ S*, iff either *T \<: S* or *S \<: T*. *This rule may surprise readers accustomed to conventional type checking. The intent of the ⟺ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work.*
 
 In the spirit of the commentary, we refine the definition of “[assignment compatible](#assignment-compatible)” as follows: let *T*, *S*, *V* and *U* be any types such that *?V* and *?U* are in normal form, then we define ⟺ by cases:
 
--   *T ⟺ ?U* **iff** *T ⟺ Null ∨ T ⟺ U*, when *T* is *not* of the form *?V*
--   *?V ⟺ S* **iff** *Null ⟺ S ∨ V ⟺ S*, when *S* is *not* of the form *?U*
--   Otherwise the [DartC](#terms "Classic (i.e., current) Dart") definition holds; i.e., <br/>
+1.  *T ⟺ ?U* **iff** *T ⟺ Null ∨ T ⟺ U*, when *T* is *not* of the form *?V*
+2.  *?V ⟺ S* **iff** *Null ⟺ S ∨ V ⟺ S*, when *S* is *not* of the form *?U*
+3.  Otherwise the [DartC](#terms "Classic (i.e., current) Dart") definition holds; i.e., <br/>
      *T ⟺ S* **iff** *T \<: S ∨ S \<: T*.
 
-> Comment. It follows that *?V ⟺ ?U* iff *V ⟺ U*. An equivalent redefinition is: <br/>
-> *T ⟺ S* **iff** *T \<: S ∨ S \<: T ∨ S = ?U ∧ U \<: T* (for some *U*).
+> Comment. It follows that *?V ⟺ ?U* iff *V ⟺ U*. An equivalent redefinition of, say (1), would be: <br/>
+> *T ⟺ ?U* **iff** *T \<: ?U ∨ ?U \<: T ∨ U \<: T*.
 
-If we expand this new definition for arguments *?V* and *S*, we end up with the formula (\*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible](#assignment-compatible), `i2` can be initialized with an `int` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics").
+Under this new relaxed definition of [assignment compatible](#assignment-compatible), `i2` can be initialized with a `num` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics").
 
 <a name="multi-members"></a>
 ### B.3.6 Static semantics of members of ?T

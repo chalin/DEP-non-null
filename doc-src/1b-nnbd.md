@@ -128,20 +128,23 @@ The semantics of `?` then follow naturally from this definition. While the Dart 
 
 From such a semantics it follows that, e.g., `Null <: ?T` and `T <: ?T` for any *T*.
 
-#### (b) Core properties of `?`{} {-}
+#### (b) Core properties of `?`{} {- #semantics-of-q}
 
-This proposal does not *require* union types. In the absence of union types we characterize `?` by its core properties. For any type *T*
+This proposal does not *require* union types. In the absence of union types we characterize `?` by its core properties. For any types *T* and *S* that are not `void`:
 
-+ `Null` and *T* are _more specific_ than ?*T* ([A.1.4](#def-subtype)):
+1. `Null` and *T* are _more specific_ than ?*T* ([A.1.4](#def-subtype)):
     - `Null` << ?*T*,
     - *T* << ?*T*;
-- ??*T* = ?*T* (idempotence),
-- ?`Null` = `Null` (fixed point),
-- ?`dynamic` = `dynamic` (fixed point, [D.2.1](#dynamic-and-type-operators)).
+2. ??*T* = ?*T* (idempotence),
+3. ?`Null` = `Null` (fixed point),
+4. ?`dynamic` = `dynamic` (fixed point, [D.2.1](#dynamic-and-type-operators)).
+5. ?*T* << *S*  **iff**  `Null` << *S*  $\land$  *T* << *S*.
+6. *T* << ?*S*  $\land$ $\lnot$(`Null` << *T*) implies *T* << *S*.
 
-These last three equations are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)). When ?*V* and ?*U* are in  normal form, then:
+Equations 2 to 4 are part of the rewrite rules for the **normalization** of ?*T* expressions ([B.3.3](#shared-type-op-semantics)).
 
-- ?*V* << *S*  **iff**  `Null` << *S*  $\land$  *V* << *S*.
+> Comment. It follows from (1) that <br/> \
+> *T* << ?*S*  **if**  *T* << `Null`  $\lor$  *T* << *S*.
 
 It is a compile-time error if `?` is applied to `void`.
 It is a [static warning][] if an occurrence of ?*T* is not in normal form.
@@ -210,56 +213,63 @@ A class or library variable that is (1) `const` or `final`, or (2) declared non-
 Consider the following [DartNNBD][] code:
 
 ```dart
-?int i = 1; // ok
-class C1<T1 extends int> { T1 i1 = 1; } // ok
-class C2<T2 extends int> { ?T2 i2 = 1; } // should be ok
+?int i = 1.0; // ok
+class C<T extends int> {
+   T i1 = 1.0; // ok
+  ?T i2 = 1.0; // should be ok
+}
 ```
 
-According to the [DartC][] definition of [assignment compatible][] described in [A.1.4](#def-subtype), a [static warning][] should be reported for the initialization of `i2`. To understand why, let us examine the general case of
+The assignment of `1.0` to `i1` is valid because $\pg{num} \asgn T^{\pg{int}}$
 
-```dart
-class C<T extends B> { T o = s; }
-```
+$= \pg{num} \subtype T^{\pg{int}} \lor T^{\pg{int}} \subtype \pg{num}$, by def. $\asgn$ <br/> \
+$= [\bot/\DYNAMIC]\pg{num} \mst T^{\pg{int}} \lor [\bot/\DYNAMIC]T^{\pg{int}} \mst \pg{num}$, by def. $\subtype$ <br/> \
+$= \pg{num} \mst T^{\pg{int}} \lor T^{\pg{int}} \mst \pg{num}$, by simplification. <br/> \
+$\impliedby T^{\pg{int}} \mst \pg{num}$, by disjunction introduction. <br/> \
+$= T^{\pg{int}} \mst \pg{int} \land \pg{int} \mst \pg{num}$, by transitivity. <br/> \
+$= \pg{true} \land \pg{int} \mst \pg{num}$, by [A.1.4](#def-subtype) `<<` (5). <br/> \
+$= \pg{true} \land \pg{true}$, by [A.1.4](#def-subtype) `<<` (4). <br/> \
+$= \pg{true}$.
 
-where `s` is some expression of type $S$. Let us write $T^B$ to represent that the type parameter $T$ has upper bound $B$. The assignment to `o` is valid if $S$ is [assignment compatible][] with $T^B$, written $S \asgn T^B$. But $T^B$ is incomparable when it is not instantiated. The best we can do is compare $S$ to $B$ and try to establish that $B \subtype S$. Thus, $S \asgn T^B$
+On the other hand, according to the [DartC][] definition of [assignment compatible][] described in [A.1.4](#def-subtype), a [static warning][] should be reported for the initialization of `i2` since `num` is not [assignment compatible][] with `?T`. Here is the derivation of $\pg{num} \asgn \nut{T^{\pg{int}}}$
 
-$= S \subtype T^B \lor T^B \subtype S$ (by definition of $\asgn$) <br/> \
-$\impliedby S \subtype T^B \lor T^B \subtype B \land B \subtype S$ <br/> \
-$= S \subtype T^B \lor B \subtype S$ (simplified because $B$ is the upper bound of $T^B$).
+$= \pg{num} \subtype \nut{T^{\pg{int}}} \lor \nut{T^{\pg{int}}} \subtype \pg{num}$, by def. $\asgn$ <br/> \
+$= [\bot/\DYNAMIC]\pg{num} \mst \nut{T^{\pg{int}}} \lor [\bot/\DYNAMIC]\nut{T^{\pg{int}}} \mst \pg{num}$, by def. $\subtype$ <br/> \
+$= \pg{num} \mst \nut{T^{\pg{int}}} \lor \nut{T^{\pg{int}}} \mst \pg{num}$, by simplification.
 
-where $\impliedby$ is reverse implication. In the case of class `C2` above, the field `i2` is of type ?`T2`, hence we are dealing with the general case: $S \asgn \nut{T^B}$
+Let us refer to the disjuncts as (L) and (R). We prove (L) by contradiction:
 
-$= S \subtype \nut{T^B} \lor \nut{T^B} \subtype S$ (by definition of $\asgn$) <br/> \
-$= S \subtype \pg{Null} \lor S \subtype T^B \lor \nut{T^B} \subtype S$ (property of ?) <br/> \
-$= S \subtype \pg{Null} \lor S \subtype T^B \lor (\pg{Null} \subtype S \land T^B \subtype S)$ (property of ?) <br/> \
-$\impliedby S \subtype \pg{Null} \lor S \subtype T^B \lor (\pg{Null} \subtype S \land T^B \subtype B \land B \subtype S)$ <br/> \
-$= S \subtype \pg{Null} \lor S \subtype T^B \lor (\pg{Null} \subtype S \land B \subtype S)$. (*)
+$\pg{num} \mst \nut{T^{\pg{int}}}$, by assumption. <br/> \
+$= \pg{num} \mst \nut{T^{\pg{int}}}  \land  \lnot(\pg{Null} \mst \pg{num})$, property of `num`. <br/> \
+$= \pg{num} \mst T^{\pg{int}}$, by [B.3.1.b](#semantics-of-q) (6). <br/> \
+$= \pg{num} \mst T^{\pg{int}}  \land  T^{\pg{int}} \mst \pg{int}$, by ([A.1.4](#def-subtype) `<<` (5)) <br/> \
+$= \pg{num} \mst \pg{int}$, by transitivity.
 
-If we substitute the type of `i2` and the bound of `T2` for $S$ and $B$ in (*) and we get:
+Which is false, hence our original assumption (L) was false. Now for (R):
 
-$\pg{int} \subtype \pg{Null} \lor \pg{int} \subtype T^{\pg{int}} \lor (\pg{Null} \subtype \pg{int} \land \pg{int} \subtype \pg{int})$ <br/> \
-$= \pg{false} \lor \pg{int} \subtype T^{\pg{int}} \lor (\pg{false} \land \pg{true})$ <br/> \
-$= \pg{int} \subtype T^{\pg{int}} \lor \pg{false}$ <br/> \
+$\nut{T^{\pg{int}}} \mst \pg{num}$ <br/> \
+$= \pg{Null} \mst \pg{num}  \land  T^{\pg{int}} \mst \pg{num}$, by [B.3.1.b](#semantics-of-q) (5). <br/> \
+$= \pg{false}  \land  T^{\pg{int}} \mst \pg{num}$, property of `num`. <br/> \
 $= \pg{false}$.
 
-This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible][] is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS][] 19.4):
+Hence `num` is not assignable to `?T`. This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `num` to it. The problem is that the definition of [assignment compatible][] is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS][] 19.4):
 
 > An interface type $T$ may be assigned to a type $S$, written  $T \asgn S$, iff either $T \subtype S$ or $S \subtype T$. 
 > _This rule may surprise readers accustomed to conventional type checking. The intent of the $\asgn$ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work._
 
 In the spirit of the commentary, we refine the definition of "[assignment compatible][]" as follows: let $T$, $S$, $V$ and $U$ be any types such that $\nut{V}$ and $\nut{U}$ are in normal form, then we define $\asgn$ by cases:
 
-- $T \asgn \nut{U}$
+1. $T \asgn \nut{U}$
   **iff** $T \asgn \pg{Null} \lor T \asgn U$, when $T$ is *not* of the form $\nut{V}$
-- $\nut{V} \asgn S$
+2. $\nut{V} \asgn S$
   **iff** $\pg{Null} \asgn S \lor V \asgn S$, when $S$ is *not* of the form $\nut{U}$
-- Otherwise the [DartC][] definition holds; i.e., <br/> \
+3. Otherwise the [DartC][] definition holds; i.e., <br/> \
   $T \asgn S$ **iff** $T \subtype S \lor S \subtype T$.
 
-> Comment. It follows that $\nut{V} \asgn \nut{U}$ iff $V \asgn U$. An equivalent redefinition is: <br/> \
-> $T \asgn S$ **iff** $T \subtype S \lor S \subtype T \lor S = \nut{U} \land U \subtype T$ (for some $U$).
+> Comment. It follows that $\nut{V} \asgn \nut{U}$ iff $V \asgn U$. An equivalent redefinition of, say (1), would be: <br/> \
+> $T \asgn \nut{U}$  **iff**  $T \subtype \nut{U} \lor \nut{U} \subtype T \lor U \subtype T$.
 
-If we expand this new definition for arguments $\nut{V}$ and $S$, we end up with the formula (*) as above, except that the last logical operator is a disjunction rather than a conjunction. Under this new relaxed definition of [assignment compatible][], `i2` can be initialized with an `int` in [DartNNBD][].
+Under this new relaxed definition of [assignment compatible][], `i2` can be initialized with a `num` in [DartNNBD][].
 
 ### B.3.6 Static semantics of members of ?T {#multi-members}
 
