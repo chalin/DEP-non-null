@@ -213,46 +213,32 @@ A class or library variable that is (1) `const` or `final`, or (2) declared non-
 Consider the following [DartNNBD][] code:
 
 ```dart
-?int i = 1.0; // ok
+?int i = 1; // ok
 class C<T extends int> {
-   T i1 = 1.0; // ok
-  ?T i2 = 1.0; // should be ok
+   T i1 = 1; // ok
+  ?T i2 = 1; // should be ok
 }
 ```
 
-The assignment of `1.0` to `i1` is valid because $\pg{num} \asgn T^{\pg{int}}$
+The assignment of `1` to `i1` is valid because $\pg{int} \asgn T^{\pg{int}}$
 
-$= \pg{num} \subtype T^{\pg{int}} \lor T^{\pg{int}} \subtype \pg{num}$, by def. $\asgn$ <br/> \
-$= [\bot/\DYNAMIC]\pg{num} \mst T^{\pg{int}} \lor [\bot/\DYNAMIC]T^{\pg{int}} \mst \pg{num}$, by def. $\subtype$ <br/> \
-$= \pg{num} \mst T^{\pg{int}} \lor T^{\pg{int}} \mst \pg{num}$, by simplification. <br/> \
-$\impliedby T^{\pg{int}} \mst \pg{num}$, by disjunction introduction. <br/> \
-$= T^{\pg{int}} \mst \pg{int} \land \pg{int} \mst \pg{num}$, by transitivity. <br/> \
-$= \pg{true} \land \pg{int} \mst \pg{num}$, by [A.1.4](#def-subtype) `<<` (5). <br/> \
-$= \pg{true} \land \pg{true}$, by [A.1.4](#def-subtype) `<<` (4). <br/> \
-$= \pg{true}$.
+$= \pg{int} \subtype T^{\pg{int}} \lor T^{\pg{int}} \subtype \pg{int}$, by def. of $\asgn$ <br/> \
+$= [\bot/\DYNAMIC]\pg{int} \mst T^{\pg{int}} \lor [\bot/\DYNAMIC]T^{\pg{int}} \mst \pg{int}$, by def. of $\subtype$ <br/> \
+$= \pg{int} \mst T^{\pg{int}} \lor T^{\pg{int}} \mst \pg{int}$, by simplification.
 
-On the other hand, according to the [DartC][] definition of [assignment compatible][] described in [A.1.4](#def-subtype), a [static warning][] should be reported for the initialization of `i2` since `num` is not [assignment compatible][] with `?T`. Here is the derivation of $\pg{num} \asgn \nut{T^{\pg{int}}}$
+Which is true since the right disjunct is an instance of [A.1.4](#def-subtype) `<<` (5). On the other hand, according to the [DartC][] definition of [assignment compatible][] described in [A.1.4](#def-subtype), a [static warning][] should be reported for the initialization of `i2` since `int` is not [assignment compatible][] with `?T`. Here is the derivation of $\pg{int} \asgn \nut{T^{\pg{int}}}$
 
-$= \pg{num} \subtype \nut{T^{\pg{int}}} \lor \nut{T^{\pg{int}}} \subtype \pg{num}$, by def. $\asgn$ <br/> \
-$= [\bot/\DYNAMIC]\pg{num} \mst \nut{T^{\pg{int}}} \lor [\bot/\DYNAMIC]\nut{T^{\pg{int}}} \mst \pg{num}$, by def. $\subtype$ <br/> \
-$= \pg{num} \mst \nut{T^{\pg{int}}} \lor \nut{T^{\pg{int}}} \mst \pg{num}$, by simplification.
+$= \pg{int} \subtype \nut{T^{\pg{int}}} \lor \nut{T^{\pg{int}}} \subtype \pg{int}$, by def. $\asgn$ <br/> \
+$= [\bot/\DYNAMIC]\pg{int} \mst \nut{T^{\pg{int}}} \lor [\bot/\DYNAMIC]\nut{T^{\pg{int}}} \mst \pg{int}$, by def. $\subtype$ <br/> \
+$= \pg{int} \mst \nut{T^{\pg{int}}} \lor \nut{T^{\pg{int}}} \mst \pg{int}$, by simplification.
 
-Let us refer to the disjuncts as (L) and (R). We prove (L) by contradiction:
+Let us refer to the disjuncts as (L) and (R). (L) is false since `int` and $\nut{T^{\pg{int}}}$ are incomparable. As for (R):
 
-$\pg{num} \mst \nut{T^{\pg{int}}}$, by assumption. <br/> \
-$= \pg{num} \mst \nut{T^{\pg{int}}}  \land  \lnot(\pg{Null} \mst \pg{num})$, property of `num`. <br/> \
-$= \pg{num} \mst T^{\pg{int}}$, by [B.3.1.b](#semantics-of-q) (6). <br/> \
-$= \pg{num} \mst T^{\pg{int}}  \land  T^{\pg{int}} \mst \pg{int}$, by ([A.1.4](#def-subtype) `<<` (5)) <br/> \
-$= \pg{num} \mst \pg{int}$, by transitivity.
+$\nut{T^{\pg{int}}} \mst \pg{int}$ <br/> \
+$= \pg{Null} \mst \pg{int}  \land  T^{\pg{int}} \mst \pg{int}$, by [B.3.1.b](#semantics-of-q) (5). <br/> \
+$= \pg{false}  \land  T^{\pg{int}} \mst \pg{int}$, property of `int` and `Null`.
 
-Which is false, hence our original assumption (L) was false. Now for (R):
-
-$\nut{T^{\pg{int}}} \mst \pg{num}$ <br/> \
-$= \pg{Null} \mst \pg{num}  \land  T^{\pg{int}} \mst \pg{num}$, by [B.3.1.b](#semantics-of-q) (5). <br/> \
-$= \pg{false}  \land  T^{\pg{int}} \mst \pg{num}$, property of `num`. <br/> \
-$= \pg{false}$.
-
-Hence `num` is not assignable to `?T`. This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `num` to it. The problem is that the definition of [assignment compatible][] is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS][] 19.4):
+Hence `int` is not assignable to `?T`. This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible][] is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS][] 19.4):
 
 > An interface type $T$ may be assigned to a type $S$, written  $T \asgn S$, iff either $T \subtype S$ or $S \subtype T$. 
 > _This rule may surprise readers accustomed to conventional type checking. The intent of the $\asgn$ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work._
@@ -269,7 +255,12 @@ In the spirit of the commentary, we refine the definition of "[assignment compat
 > Comment. It follows that $\nut{V} \asgn \nut{U}$ iff $V \asgn U$. An equivalent redefinition of, say (1), would be: <br/> \
 > $T \asgn \nut{U}$  **iff**  $T \subtype \nut{U} \lor \nut{U} \subtype T \lor U \subtype T$.
 
-Under this new relaxed definition of [assignment compatible][], `i2` can be initialized with a `num` in [DartNNBD][].
+Under this new relaxed definition of [assignment compatible][], `i2` can be initialized with an `int` in [DartNNBD][]. Outside the context of generics, this new definition also now allows, e.g.:
+
+```dart
+num n = 1.0;
+?int i = n; // ok
+```
 
 ### B.3.6 Static semantics of members of ?T {#multi-members}
 

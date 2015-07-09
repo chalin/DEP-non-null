@@ -1,6 +1,6 @@
 # Dart DEP #30: Non-null Types and Non-null By Default (NNBD)
 ### Patrice Chalin, [chalin@dsrg.org](mailto:chalin@dsrg.org)
-#### 2015-07-03 (0.6.6) - [revision history](#revision-history)
+#### 2015-07-09 (0.6.7) - [revision history](#revision-history)
 
 -   [DEP \#30: Non-null Types and Non-null By Default (NNBD)](#part-main)
     -   [Contact information](#contact-information)
@@ -814,46 +814,32 @@ A class or library variable that is (1) `const` or `final`, or (2) declared non-
 Consider the following [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics") code:
 
 ``` java
-?int i = 1.0; // ok
+?int i = 1; // ok
 class C<T extends int> {
-   T i1 = 1.0; // ok
-  ?T i2 = 1.0; // should be ok
+   T i1 = 1; // ok
+  ?T i2 = 1; // should be ok
 }
 ```
 
-The assignment of `1.0` to `i1` is valid because *num ⟺ T<sup>int</sup>*
+The assignment of `1` to `i1` is valid because *int ⟺ T<sup>int</sup>*
 
-*= num \<: T<sup>int</sup> ∨ T<sup>int</sup> \<: num*, by def. ⟺ <br/>
-*= [⊥/dynamic]num \<\< T<sup>int</sup> ∨ [⊥/dynamic]T<sup>int</sup> \<\< num*, by def. *\<:* <br/>
-*= num \<\< T<sup>int</sup> ∨ T<sup>int</sup> \<\< num*, by simplification. <br/>
-*⟸ T<sup>int</sup> \<\< num*, by disjunction introduction. <br/>
-*= T<sup>int</sup> \<\< int ∧ int \<\< num*, by transitivity. <br/>
-*= true ∧ int \<\< num*, by [A.1.4](#def-subtype) `<<` (5). <br/>
-*= true ∧ true*, by [A.1.4](#def-subtype) `<<` (4). <br/>
-*= true*.
+*= int \<: T<sup>int</sup> ∨ T<sup>int</sup> \<: int*, by def. of ⟺ <br/>
+*= [⊥/dynamic]int \<\< T<sup>int</sup> ∨ [⊥/dynamic]T<sup>int</sup> \<\< int*, by def. of *\<:* <br/>
+*= int \<\< T<sup>int</sup> ∨ T<sup>int</sup> \<\< int*, by simplification.
 
-On the other hand, according to the [DartC](#terms "Classic (i.e., current) Dart") definition of [assignment compatible](#assignment-compatible) described in [A.1.4](#def-subtype), a [static warning](#terms "A problem reported by the static checker") should be reported for the initialization of `i2` since `num` is not [assignment compatible](#assignment-compatible) with `?T`. Here is the derivation of *num ⟺ ?T<sup>int</sup>*
+Which is true since the right disjunct is an instance of [A.1.4](#def-subtype) `<<` (5). On the other hand, according to the [DartC](#terms "Classic (i.e., current) Dart") definition of [assignment compatible](#assignment-compatible) described in [A.1.4](#def-subtype), a [static warning](#terms "A problem reported by the static checker") should be reported for the initialization of `i2` since `int` is not [assignment compatible](#assignment-compatible) with `?T`. Here is the derivation of *int ⟺ ?T<sup>int</sup>*
 
-*= num \<: ?T<sup>int</sup> ∨ ?T<sup>int</sup> \<: num*, by def. ⟺ <br/>
-*= [⊥/dynamic]num \<\< ?T<sup>int</sup> ∨ [⊥/dynamic]?T<sup>int</sup> \<\< num*, by def. *\<:* <br/>
-*= num \<\< ?T<sup>int</sup> ∨ ?T<sup>int</sup> \<\< num*, by simplification.
+*= int \<: ?T<sup>int</sup> ∨ ?T<sup>int</sup> \<: int*, by def. ⟺ <br/>
+*= [⊥/dynamic]int \<\< ?T<sup>int</sup> ∨ [⊥/dynamic]?T<sup>int</sup> \<\< int*, by def. *\<:* <br/>
+*= int \<\< ?T<sup>int</sup> ∨ ?T<sup>int</sup> \<\< int*, by simplification.
 
-Let us refer to the disjuncts as (L) and (R). We prove (L) by contradiction:
+Let us refer to the disjuncts as (L) and (R). (L) is false since `int` and *?T<sup>int</sup>* are incomparable. As for (R):
 
-*num \<\< ?T<sup>int</sup>*, by assumption. <br/>
-*= num \<\< ?T<sup>int</sup> ∧ ¬(Null \<\< num)*, property of `num`. <br/>
-*= num \<\< T<sup>int</sup>*, by [B.3.1.b](#semantics-of-q) (6). <br/>
-*= num \<\< T<sup>int</sup> ∧ T<sup>int</sup> \<\< int*, by ([A.1.4](#def-subtype) `<<` (5)) <br/>
-*= num \<\< int*, by transitivity.
+*?T<sup>int</sup> \<\< int* <br/>
+*= Null \<\< int ∧ T<sup>int</sup> \<\< int*, by [B.3.1.b](#semantics-of-q) (5). <br/>
+*= false ∧ T<sup>int</sup> \<\< int*, property of `int` and `Null`.
 
-Which is false, hence our original assumption (L) was false. Now for (R):
-
-*?T<sup>int</sup> \<\< num* <br/>
-*= Null \<\< num ∧ T<sup>int</sup> \<\< num*, by [B.3.1.b](#semantics-of-q) (5). <br/>
-*= false ∧ T<sup>int</sup> \<\< num*, property of `num`. <br/>
-*= false*.
-
-Hence `num` is not assignable to `?T`. This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `num` to it. The problem is that the definition of [assignment compatible](#assignment-compatible) is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.4):
+Hence `int` is not assignable to `?T`. This seems counter intuitive: if `i2` is (at least) a nullable `int`, then it should be valid to assign an `int` to it. The problem is that the definition of [assignment compatible](#assignment-compatible) is too strong in the presence of union types. Before proposing a relaxed definition we repeat the definition of assignability given in [A.1.4](#def-subtype), along with the associated commentary from ([DSS](http://www.ecma-international.org/publications/standards/Ecma-408.htm) 19.4):
 
 > An interface type *T* may be assigned to a type *S*, written *T ⟺ S*, iff either *T \<: S* or *S \<: T*. *This rule may surprise readers accustomed to conventional type checking. The intent of the ⟺ relation is not to ensure that an assignment is correct. Instead, it aims to only flag assignments that are almost certain to be erroneous, without precluding assignments that may work.*
 
@@ -867,7 +853,12 @@ In the spirit of the commentary, we refine the definition of “[assignment comp
 > Comment. It follows that *?V ⟺ ?U* iff *V ⟺ U*. An equivalent redefinition of, say (1), would be: <br/>
 > *T ⟺ ?U* **iff** *T \<: ?U ∨ ?U \<: T ∨ U \<: T*.
 
-Under this new relaxed definition of [assignment compatible](#assignment-compatible), `i2` can be initialized with a `num` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics").
+Under this new relaxed definition of [assignment compatible](#assignment-compatible), `i2` can be initialized with an `int` in [DartNNBD](#terms "Dart as defined in this proposal with Non-Null By Default semantics"). Outside the context of generics, this new definition also now allows, e.g.:
+
+``` java
+num n = 1.0;
+?int i = n; // ok
+```
 
 <a name="multi-members"></a>
 ### B.3.6 Static semantics of members of ?T
